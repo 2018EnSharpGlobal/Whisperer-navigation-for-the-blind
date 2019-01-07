@@ -19,15 +19,15 @@ public class Station_Info {
         Per_Station_Info Sejong_University = new Per_Station_Info
                 (Constant.Sejong_University_latitude,Constant.Sejong_University_longitude,Constant.Sejong_University_number);
         station_infos.add(Sejong_University);
-        
+
     }
 
     //역에 대한 정보들을 가지는 내부 Class
-    private class Per_Station_Info{
+    public class Per_Station_Info{
 
-        private double station_latitude;
-        private double station_longitude;
-        private String station_call_number;
+        public double station_latitude;
+        public double station_longitude;
+        public String station_call_number;
 
         private Per_Station_Info(double _station_latitude, double _station_longitude, String _station_call_number){
             this.station_latitude = _station_latitude;
