@@ -7,5 +7,5 @@ public class Constant {
     public static final double Sejong_University_latitude = 37.547736;
     public static final double Sejong_University_longitude = 127.074437;
 
-    
+
 }
