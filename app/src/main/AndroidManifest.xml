@@ -2,8 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ensharp.yeey.whisperer">
 
-    <!--전화 걸기 Permission-->
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <!-- IndoorAtlas declare sensors-->
+    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
+    <uses-feature android:name="android.hardware.sensor.compass"  android:required="true" />
+    <uses-feature android:name="android.hardware.sensor.gyroscope"  android:required="true" />
+    <uses-feature android:name="android.hardware.wifi" android:required="true" />
+
+    <!-- Indooratlas Beacon 사용하는 것을 권장-->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+
 
     <application
         android:allowBackup="true"
@@ -19,6 +28,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- IndoorAtlas API KEY 삽입 -->
+        <meta-data
+            android:name="com.indooratlas.android.sdk.API_KEY"
+            android:value="api-key-here"/>
+        <meta-data
+            android:name="com.indooratlas.android.sdk.API_SECRET"
+            android:value="api-secret-here"/>
     </application>
 
 </manifest>

@@ -1,6 +1,10 @@
 package ensharp.yeey.whisperer;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ODsayService odsayService;
 
+    private final int CODE_PERMISSIONS = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,9 +30,27 @@ public class MainActivity extends AppCompatActivity {
 
         initSubwayAPI();
 
-        Call_Station_Number call_station_number = new Call_Station_Number(this);
-        call_station_number.Call_Station();
+//        Call_Station_Number call_station_number = new Call_Station_Number(this);
+//        call_station_number.Call_Station();
+
+        //권한
+        String[] neededPermissions = {
+                Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+
+        ActivityCompat.requestPermissions(this, neededPermissions, CODE_PERMISSIONS );
+
     }
+
+    //허가 요청후 오버라이드 함수
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    }
+
 
     /**
      * 지하철 운행정보를 가져오는 API를 호출합니다.
