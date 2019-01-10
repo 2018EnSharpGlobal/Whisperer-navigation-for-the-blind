@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Whisperer</string>
+
+    <!--지하철 API key-->
+    <string name="odsay_key">0jdKwoVrfQU89HaJTS6E3QZxafC3fOuq/cwBK8/6KZU</string>
+
+</resources>
