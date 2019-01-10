@@ -64,11 +64,10 @@ class ODsayServiceManager {
             jsonObject = oDsayData.getJson();
 
             switch (api.name()) {
-                case "지하철 경로검색 조회(지하철 노선도)":
+                case "SUBWAY_PATH":
 //                    parsePath(jsonObject);
                     break;
-                case "반경내 대중교통 POI 검색":
-                   // if (api == API.POINT_SEARCH) {
+                case "POINT_SEARCH":
                         JSONObject result = null;
                         try {
                             result = oDsayData.getJson().getJSONObject("result");
@@ -81,7 +80,6 @@ class ODsayServiceManager {
                             e.printStackTrace();
                         }
                     break;
-
             }
 
             Log.e(TAG, "onSuccess: " + jsonObject.toString());
