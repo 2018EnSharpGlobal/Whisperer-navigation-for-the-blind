@@ -15,6 +15,8 @@ import com.odsay.odsayandroidsdk.ODsayData;
 import com.odsay.odsayandroidsdk.ODsayService;
 import com.odsay.odsayandroidsdk.OnResultCallbackListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -22,8 +24,8 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import ensharp.yeey.whisperer.Common.VO.PathVO;
 import ensharp.yeey.whisperer.Common.VO.ExchangeInfoVO;
+import ensharp.yeey.whisperer.Common.VO.PathVO;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -46,7 +48,6 @@ class ODsayServiceManager {
 
     private ODsayServiceManager() {
     }
-
 
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -75,6 +76,19 @@ class ODsayServiceManager {
                 case "SUBWAY_PATH":
                     path = parsePath(jsonObject);
                     break;
+                case "POINT_SEARCH":
+                        JSONObject result = null;
+                        try {
+                            result = oDsayData.getJson().getJSONObject("result");
+                            JSONArray station_array = result.getJSONArray("station");
+                            JSONObject station = station_array.getJSONObject(5);
+
+                            //필요한 station_Id 정보
+                            String station_ID = station.getString("stationID");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    break;
             }
 
             Log.e(TAG, "onSuccess: " + jsonObject.toString());
@@ -85,6 +99,11 @@ class ODsayServiceManager {
             Log.e(TAG, "onError: API : " + api.name() + "\n" + errorMessage);
         }
     };
+
+    //가까운 지하철역 코드 조회
+    public void find_closer_station_code(double latitude, double longitude){
+        odsayService.requestPointSearch(String.valueOf(longitude), String.valueOf(latitude), "5000", "2", onResultCallbackListener);
+    }
 
     /**
      * 출발역과 도착역의 코드를 파라미터로 전달하면 이동 경로를 계산합니다.
@@ -136,6 +155,7 @@ class ODsayServiceManager {
      * 지하철역의 이름을 입력하면 해당 역의 코드를 반환하는 메소드입니다.
      * @param station 역명
      * @return 지하철역 코드
+     * String station_code = excelManager.Find_Data(station, Constant.STATION_NAME, Constant.STATION_CODE);
      */
     public String getStationCode(String station) {
         InputStream inputStream = null;

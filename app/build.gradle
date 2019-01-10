@@ -34,8 +34,10 @@ dependencies {
     //odsay 종속 추가
     implementation project(':ODsayAndroidSDK')
     implementation 'com.google.code.findbugs:jsr305:2.0.1'
-    //excel edpendecies
+    //excel dependency
     implementation files('libs/jxl.jar')
+    //Gson
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 repositories{
