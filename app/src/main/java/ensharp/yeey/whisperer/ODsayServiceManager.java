@@ -1,5 +1,11 @@
 package ensharp.yeey.whisperer;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -24,11 +30,14 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import ensharp.yeey.whisperer.Common.VO.CloserStationVO;
 import ensharp.yeey.whisperer.Common.VO.ExchangeInfoVO;
 import ensharp.yeey.whisperer.Common.VO.PathVO;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+
+import static android.support.v4.content.ContextCompat.startActivity;
 
 class ODsayServiceManager {
     private static final ODsayServiceManager ourInstance = new ODsayServiceManager();
@@ -44,6 +53,10 @@ class ODsayServiceManager {
 
     private PathVO path;
 
+    private CloserStationVO closer_station;
+
+    private Context context;
+
     private static String TAG = "API Callback";
 
     private ODsayServiceManager() {
@@ -52,6 +65,7 @@ class ODsayServiceManager {
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
+    public void setContext(Context _context) { this.context = _context; }
 
     /**
      * 지하철 운행정보를 가져오는 API를 호출합니다.
@@ -78,6 +92,7 @@ class ODsayServiceManager {
                     break;
                 case "POINT_SEARCH":
                     parseCloserStation(jsonObject);
+                    Call_Station();
                     break;
             }
 
@@ -131,13 +146,9 @@ class ODsayServiceManager {
      */
     public void parseCloserStation(JSONObject jsonObject) {
         Gson gson = new GsonBuilder()
-                .registerTypeAdapter(PathVO.class, new RestDeserializer<>(PathVO.class, "result"))
+                .registerTypeAdapter(CloserStationVO.class, new RestDeserializer<>(PathVO.class, "result"))
                 .create();
-        PathVO path = gson.fromJson(jsonObject.toString(), PathVO.class);
-
-        if (path.getExChangeInfoSet() == null)
-
-        path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
+        closer_station = gson.fromJson(jsonObject.toString(), CloserStationVO.class);
 
 //        JSONObject result = null;
 //        try {
@@ -150,8 +161,21 @@ class ODsayServiceManager {
 //        } catch (JSONException e) {
 //            e.printStackTrace();
 //        }
+    }
 
+    //해당 역 코드로 전화번호를 찾아서 전화 걸기
+    public void Call_Station(){
+        ExcelManager excelManager = new ExcelManager(context);
 
+        String station_number = excelManager.Find_Data(String.valueOf(closer_station.getStationId())
+                , Constant.STATION_CODE, Constant.STATION_NUMBER);
+
+        Uri call = Uri.parse("tel:" + station_number);
+        Intent call_intent = new Intent(Intent.ACTION_CALL, call);
+
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+            startActivity(context, call_intent,null);
+        }
     }
 
     /**
