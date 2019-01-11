@@ -77,17 +77,7 @@ class ODsayServiceManager {
                     path = parsePath(jsonObject);
                     break;
                 case "POINT_SEARCH":
-                        JSONObject result = null;
-                        try {
-                            result = oDsayData.getJson().getJSONObject("result");
-                            JSONArray station_array = result.getJSONArray("station");
-                            JSONObject station = station_array.getJSONObject(5);
-
-                            //필요한 station_Id 정보
-                            String station_ID = station.getString("stationID");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                    parseCloserStation(jsonObject);
                     break;
             }
 
@@ -132,6 +122,36 @@ class ODsayServiceManager {
         path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
 
         return path;
+    }
+
+    /**
+     * 가까운 지하철 정보를 파싱하는 메소드입니다.
+     * @param jsonObject API에서 반환된 JSONObject
+     * @return 파싱된 PathVO 객체
+     */
+    public void parseCloserStation(JSONObject jsonObject) {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(PathVO.class, new RestDeserializer<>(PathVO.class, "result"))
+                .create();
+        PathVO path = gson.fromJson(jsonObject.toString(), PathVO.class);
+
+        if (path.getExChangeInfoSet() == null)
+
+        path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
+
+//        JSONObject result = null;
+//        try {
+//            result = oDsayData.getJson().getJSONObject("result");
+//            JSONArray station_array = result.getJSONArray("station");
+//            JSONObject station = station_array.getJSONObject(5);
+//
+//            //필요한 station_Id 정보
+//            String station_ID = station.getString("stationID");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+
+
     }
 
     /**
