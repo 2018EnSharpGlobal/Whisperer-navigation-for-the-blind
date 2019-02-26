@@ -18,8 +18,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ODsayServiceManager oDsayServiceManager;
 
-    private final int CODE_PERMISSIONS = 1;
-
     //indooratlas
     IALocationManager mIALocationManager;
     IALocationListener mIALocationListener;
@@ -34,15 +32,21 @@ public class MainActivity extends AppCompatActivity {
 
         initSubwayAPI();
 
-        int MyVersion = Build.VERSION.SDK_INT ;
-        if(MyVersion >= Build.VERSION_CODES.O){
-            if(!checkIfAlreadyhavePermission()){
-                requestForSpecificPermission();
-            }
-        } else{
-            Toast.makeText(this,"버전이 맞지 않아 이 앱을 사용할 수 없습니다.",Toast.LENGTH_LONG).show();
+        int MyVersion = Build.VERSION.SDK_INT;
+
+        //버전 체크
+        if (MyVersion >= Build.VERSION_CODES.O) {
+            PermissionCheck permissionCheck = new PermissionCheck();
+            permissionCheck.isCheck(this, this, Manifest.permission.CHANGE_WIFI_STATE, "와이파이 변경");
+            permissionCheck.isCheck(this, this, Manifest.permission.ACCESS_WIFI_STATE, "와이파이 접근");
+            permissionCheck.isCheck(this, this, Manifest.permission.ACCESS_COARSE_LOCATION, "위치 접근");
+            permissionCheck.isCheck(this, this, Manifest.permission.CALL_PHONE, "전화 걸기");
+        } else {
+            Toast.makeText(this, "버전이 맞지 않아 이 앱을 사용할 수 없습니다.", Toast.LENGTH_LONG).show();
             this.finish();
         }
+
+    }
 
 //        //권한
 //        String[] neededPermissions = {
@@ -113,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         //감지하는 콜백함수 등록
         mIALocationManager.registerRegionListener(mRegionListener);
         */
-    }
+
 
     /*
     //위치 계속 업데이트
@@ -210,64 +214,64 @@ public class MainActivity extends AppCompatActivity {
         oDsayServiceManager.setMainActivity(this);
         oDsayServiceManager.initAPI();
     }
-
-    private boolean checkIfAlreadyhavePermission(){
-        int call_phone_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
-        int change_wifi_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
-        int access_wifi_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
-        int access_location_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-
-        Log.e("call_phone_permission", String.valueOf(call_phone_permission));
-        Log.e("change_wifi_permission", String.valueOf(change_wifi_permission));
-        Log.e("access_wifi_permission", String.valueOf(access_wifi_permission));
-        Log.e("access_location_permission", String.valueOf(access_location_permission));
-
-        if (call_phone_permission == PackageManager.PERMISSION_GRANTED &&
-                change_wifi_permission == PackageManager.PERMISSION_GRANTED &&
-                access_wifi_permission == PackageManager.PERMISSION_GRANTED &&
-                access_location_permission == PackageManager.PERMISSION_GRANTED){
-            return true;
-        } else{
-            return false;
-        }
-    }
-
-    private void requestForSpecificPermission(){
-        //권한
-        String[] neededPermissions = {
-                Manifest.permission.CHANGE_WIFI_STATE,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.CALL_PHONE
-        };
-
-        Log.e("1","1");
-
-        ActivityCompat.requestPermissions(this, neededPermissions, 101);
-
-        Log.e("2","2");
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
-        Log.e("requestCode",String.valueOf(requestCode));
-        for(int i=0 ; i< permissions.length; i++){
-            Log.e("permissions",permissions[i].toString());
-        }
-        for(int i= 0 ; i< grantResults.length; i++){
-            Log.e("grantResults", String.valueOf(grantResults[i]));
-        }
-
-        switch (requestCode) {
-            case 101:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //granted
-                } else {
-                    //not granted
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
+//
+//    private boolean checkIfAlreadyhavePermission(){
+//        int call_phone_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
+//        int change_wifi_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
+//        int access_wifi_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
+//        int access_location_permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+//
+//        Log.e("call_phone_permission", String.valueOf(call_phone_permission));
+//        Log.e("change_wifi_permission", String.valueOf(change_wifi_permission));
+//        Log.e("access_wifi_permission", String.valueOf(access_wifi_permission));
+//        Log.e("access_location_permission", String.valueOf(access_location_permission));
+//
+//        if (call_phone_permission == PackageManager.PERMISSION_GRANTED &&
+//                change_wifi_permission == PackageManager.PERMISSION_GRANTED &&
+//                access_wifi_permission == PackageManager.PERMISSION_GRANTED &&
+//                access_location_permission == PackageManager.PERMISSION_GRANTED){
+//            return true;
+//        } else{
+//            return false;
+//        }
+//    }
+//
+//    private void requestForSpecificPermission(){
+//        //권한
+//        String[] neededPermissions = {
+//                Manifest.permission.CHANGE_WIFI_STATE,
+//                Manifest.permission.ACCESS_WIFI_STATE,
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.CALL_PHONE
+//        };
+//
+//        Log.e("1","1");
+//
+//        ActivityCompat.requestPermissions(this, neededPermissions, 101);
+//
+//        Log.e("2","2");
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+//        Log.e("requestCode",String.valueOf(requestCode));
+//        for(int i=0 ; i< permissions.length; i++){
+//            Log.e("permissions",permissions[i].toString());
+//        }
+//        for(int i= 0 ; i< grantResults.length; i++){
+//            Log.e("grantResults", String.valueOf(grantResults[i]));
+//        }
+//
+//        switch (requestCode) {
+//            case 101:
+//                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    //granted
+//                } else {
+//                    //not granted
+//                }
+//                break;
+//            default:
+//                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        }
+//    }
 }
