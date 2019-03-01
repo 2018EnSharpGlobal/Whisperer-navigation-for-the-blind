@@ -16,4 +16,7 @@ public class Constant {
     public static final int STATION_CODE = 2;
     public static final int STATION_NUMBER = 3;
 
+    //Most Closer Station Constant
+    public static final int MOST_CLOSER_STATION = 0;
+
 }

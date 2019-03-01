@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "버전이 맞지 않아 이 앱을 사용할 수 없습니다.", Toast.LENGTH_LONG).show();
             this.finish();
         }
-
+        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
     }
 
 //        //권한
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
     private void initSubwayAPI() {
         oDsayServiceManager = ODsayServiceManager.getInstance();
         oDsayServiceManager.setMainActivity(this);
-        oDsayServiceManager.initAPI();
+        oDsayServiceManager.initAPI(this);
     }
 //
 //    private boolean checkIfAlreadyhavePermission(){

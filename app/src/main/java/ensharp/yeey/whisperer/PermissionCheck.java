@@ -30,13 +30,15 @@ public class PermissionCheck {
 
         Log.e("permissionResult", String.valueOf(permissionResult));
 
-        if (permissionResult == PackageManager.PERMISSION_DENIED) { // 해당 퍼미션 권한여부 체크.
+        if (permissionResult == PackageManager.PERMISSION_DENIED) {
+            // 해당 퍼미션 권한여부 체크.
 
             /*
              * 해당 권한이 거부된 적이 있는지 유무 판별 해야함.
              * 거부된 적이 있으면 true, 거부된 적이 없으면 false 리턴
              */
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permissionChk)) { // 거부된 적이 있으면 해당 권한을 사용할 때 상세 내용을 설명. 거부한 적 없으면 true 리턴.
+                Log.e("권한","물어보기");
                 AlertDialog.Builder dialog = new AlertDialog.Builder(activity);
                 dialog.setTitle("권한이 필요합니다.")
                         .setMessage("이 기능을 사용하기 위해서는 단말기의 \"" + permissionText + "\"권한이 필요합니다. 계속 하시겠습니까?")
@@ -56,7 +58,7 @@ public class PermissionCheck {
                         }).create().show();
             }
             else {
-                result = true;
+                activity.requestPermissions(new String[]{String.valueOf(permissionChk)}, 1000);
             }
         }
         else {

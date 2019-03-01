@@ -33,6 +33,7 @@ import java.util.List;
 import ensharp.yeey.whisperer.Common.VO.CloserStationVO;
 import ensharp.yeey.whisperer.Common.VO.ExchangeInfoVO;
 import ensharp.yeey.whisperer.Common.VO.PathVO;
+import ensharp.yeey.whisperer.Common.VO.StationVO;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
@@ -52,8 +53,7 @@ class ODsayServiceManager {
     private JSONObject jsonObject;
 
     private PathVO path;
-
-    private CloserStationVO closer_station;
+    private CloserStationVO closerStation;
 
     private Context context;
 
@@ -65,16 +65,17 @@ class ODsayServiceManager {
     public void setMainActivity(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
-    public void setContext(Context _context) { this.context = _context; }
+//    public void setContext(Context _context) { this.context = _context; }
 
     /**
      * 지하철 운행정보를 가져오는 API를 호출합니다.
      * ODsayService 객체는 싱글톤으로 생성됩니다.
      */
-    public void initAPI() {
+    public void initAPI(Context _context) {
         odsayService = ODsayService.init(mainActivity, mainActivity.getString(R.string.odsay_key));
         odsayService.setReadTimeout(5000);
         odsayService.setConnectionTimeout(5000);
+        this.context = _context;
     }
 
     /**
@@ -86,13 +87,15 @@ class ODsayServiceManager {
         public void onSuccess(ODsayData oDsayData, API api) {
             jsonObject = oDsayData.getJson();
 
+//            Log.e("jsonObject",String.valueOf(jsonObject));
+
             switch (api.name()) {
                 case "SUBWAY_PATH":
                     path = parsePath(jsonObject);
                     break;
                 case "POINT_SEARCH":
-                    parseCloserStation(jsonObject);
-                    Call_Station();
+                    closerStation = parseCloserStation(jsonObject);
+                    CallStation(closerStation.getCloserStationList().get(Constant.MOST_CLOSER_STATION));
                     break;
             }
 
@@ -106,8 +109,8 @@ class ODsayServiceManager {
     };
 
     //가까운 지하철역 코드 조회
-    public void find_closer_station_code(double latitude, double longitude){
-        odsayService.requestPointSearch(String.valueOf(longitude), String.valueOf(latitude), "5000", "2", onResultCallbackListener);
+    public void findCloserStationCode(double latitude, double longitude){
+        odsayService.requestPointSearch(String.valueOf(latitude), String.valueOf(longitude), "5000", "2", onResultCallbackListener);
     }
 
     /**
@@ -134,6 +137,8 @@ class ODsayServiceManager {
         if (path.getExChangeInfoSet() == null)
             return path;
 
+        Log.e("1","1");
+
         path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
 
         return path;
@@ -144,38 +149,48 @@ class ODsayServiceManager {
      * @param jsonObject API에서 반환된 JSONObject
      * @return 파싱된 PathVO 객체
      */
-    public void parseCloserStation(JSONObject jsonObject) {
+    public CloserStationVO parseCloserStation(JSONObject jsonObject) {
         Gson gson = new GsonBuilder()
-                .registerTypeAdapter(CloserStationVO.class, new RestDeserializer<>(PathVO.class, "result"))
+                .registerTypeAdapter(CloserStationVO.class, new RestDeserializer<>(CloserStationVO.class, "result"))
                 .create();
-        closer_station = gson.fromJson(jsonObject.toString(), CloserStationVO.class);
 
-//        JSONObject result = null;
-//        try {
-//            result = oDsayData.getJson().getJSONObject("result");
-//            JSONArray station_array = result.getJSONArray("station");
-//            JSONObject station = station_array.getJSONObject(5);
-//
-//            //필요한 station_Id 정보
-//            String station_ID = station.getString("stationID");
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
+        CloserStationVO closerStationVO = gson.fromJson(jsonObject.toString(), CloserStationVO.class);
+
+        closerStationVO.setCloserStationList(parseStation(closerStationVO.getStation()));
+
+        return closerStationVO;
+    }
+
+    /**
+     * 가까운 지하철 정보 순으로 파싱하는 메소드입니다.
+     * @param jsonObject 가까운 역 정보를 담고있는 jsonObject
+     * @return 파싱된 ExchangeInfoVO List
+     */
+    public List<StationVO> parseStation(JsonElement jsonObject) {
+        Gson gson = new Gson();
+
+        Type listType = new TypeToken<List<StationVO>>() {}.getType();
+
+        List<StationVO> stationList = (List<StationVO>) gson.fromJson(jsonObject, listType);
+
+        return stationList;
     }
 
     //해당 역 코드로 전화번호를 찾아서 전화 걸기
-    public void Call_Station(){
-        ExcelManager excelManager = new ExcelManager(context);
+    public void CallStation(StationVO mCloserStation){
 
-        String station_number = excelManager.Find_Data(String.valueOf(closer_station.getStationId())
+        ExcelManager excelManager = new ExcelManager();
+        excelManager.setContext(context);
+        String stationNumber = excelManager.Find_Data(String.valueOf(mCloserStation.getStationID())
                 , Constant.STATION_CODE, Constant.STATION_NUMBER);
+        Log.e("stationNumber",stationNumber);
+        Uri call = Uri.parse("tel:" + stationNumber);
 
-        Uri call = Uri.parse("tel:" + station_number);
-        Intent call_intent = new Intent(Intent.ACTION_CALL, call);
-
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
-            startActivity(context, call_intent,null);
-        }
+//        Intent call_intent = new Intent(Intent.ACTION_CALL, call);
+//
+//        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+//            startActivity(context, call_intent,null);
+//        }
     }
 
     /**
@@ -188,7 +203,6 @@ class ODsayServiceManager {
         JsonParser parser = new JsonParser();
         JsonElement rootElement = parser.parse(jsonObject.toString())
                 .getAsJsonObject().get("exChangeInfo");
-
         Type listType = new TypeToken<List<ExchangeInfoVO>>() {}.getType();
         List<ExchangeInfoVO> exchangeInfoList = (List<ExchangeInfoVO>) gson.fromJson(rootElement, listType);
 
