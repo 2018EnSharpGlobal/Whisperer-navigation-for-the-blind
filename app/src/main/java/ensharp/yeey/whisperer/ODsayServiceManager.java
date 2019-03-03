@@ -186,11 +186,11 @@ class ODsayServiceManager {
         Log.e("stationNumber",stationNumber);
         Uri call = Uri.parse("tel:" + stationNumber);
 
-//        Intent call_intent = new Intent(Intent.ACTION_CALL, call);
-//
-//        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
-//            startActivity(context, call_intent,null);
-//        }
+        Intent call_intent = new Intent(Intent.ACTION_CALL, call);
+
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
+            startActivity(context, call_intent,null);
+        }
     }
 
     /**

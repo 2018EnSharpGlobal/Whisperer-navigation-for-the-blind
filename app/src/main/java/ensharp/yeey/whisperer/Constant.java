@@ -19,4 +19,7 @@ public class Constant {
     //Most Closer Station Constant
     public static final int MOST_CLOSER_STATION = 0;
 
+    //Permission request Code
+    public static final int PERMISSION_REQUEST_CODE = 1;
+
 }
