@@ -19,12 +19,12 @@ public class IntroActivity extends AppCompatActivity {
 
 //        // Intro screen
 //        try {
-//            sleep(2000);
+//            sleep(3000);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-
-//        startActivity(new Intent(this, .class));
+//
+//        startActivity(new Intent(this, CommandWaiting.class));
 //        finish();
     }
 }
