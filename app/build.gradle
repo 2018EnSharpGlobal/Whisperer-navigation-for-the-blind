@@ -38,11 +38,20 @@ dependencies {
     implementation files('libs/jxl.jar')
     //Gson
     implementation 'com.google.code.gson:gson:2.8.5'
+    //Glide
+    implementation('com.github.bumptech.glide:glide:4.8.0') {
+        exclude group: "com.android.support"
+    }
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 }
 
-repositories{
+repositories {
+    //Glide
+    mavenCentral()
+    google()
+
+    //indooratlas sdk
     maven {
-        //indooratlas sdk
         url "http://indooratlas-ltd.bintray.com/mvn-public"
     }
 }

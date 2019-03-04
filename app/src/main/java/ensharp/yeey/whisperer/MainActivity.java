@@ -114,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
                                 .setPositiveButton("종료", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
-
                                     }
                                 }).setNegativeButton("권한 설정", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -128,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                 }
-                //하고자 하는 기능 실행
             }
         }
     }
