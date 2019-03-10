@@ -17,14 +17,14 @@ public class IntroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
 
-//        // Intro screen
-//        try {
-//            sleep(3000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        startActivity(new Intent(this, CommandWaiting.class));
-//        finish();
+        // Intro screen
+        try {
+            sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        startActivity(new Intent(this, CommandWaitingActivity.class));
+        finish();
     }
 }

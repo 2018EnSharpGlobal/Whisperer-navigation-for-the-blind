@@ -22,4 +22,7 @@ public class Constant {
     //Permission request Code
     public static final int PERMISSION_REQUEST_CODE = 1;
 
+    //Touch duration time
+    public static final int MAX_DURATION = 500;
+
 }
