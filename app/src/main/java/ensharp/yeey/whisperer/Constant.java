@@ -25,4 +25,8 @@ public class Constant {
     //Touch duration time
     public static final int MAX_DURATION = 500;
 
+    //Function
+    public static final int NAVIGATE_WAY = 1;
+    public static final int GET_STATION_INFO = 2;
+    public static final int CALL_STATION = 3;
 }

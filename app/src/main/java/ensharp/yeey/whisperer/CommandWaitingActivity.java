@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class CommandWaitingActivity extends AppCompatActivity {
 
     private Intent i;
@@ -49,7 +51,13 @@ public class CommandWaitingActivity extends AppCompatActivity {
 
         @Override
         public void onResults(Bundle bundle) {
-
+            String key = "";
+            key = SpeechRecognizer.RESULTS_RECOGNITION;
+            ArrayList<String> mResult = bundle.getStringArrayList(key);
+            String[] rs = new String[mResult.size()];
+            mResult.toArray(rs);
+            Toast.makeText(getBaseContext(), rs[0], Toast.LENGTH_LONG).show();
+//            mRecognizer.startListening(i);
         }
 
         @Override
@@ -68,6 +76,20 @@ public class CommandWaitingActivity extends AppCompatActivity {
     long startTime;
     long duration;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_command_waiting);
+
+        i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        i.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
+        mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        mRecognizer.setRecognitionListener(listener);
+
+    }
+
+    //화면 터치 함수
     View.OnTouchListener MyOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -82,7 +104,8 @@ public class CommandWaitingActivity extends AppCompatActivity {
                     if(clickCount == 2){
                         //더블 클릭
                         if( duration <= Constant.MAX_DURATION){
-
+                            Toast.makeText(getBaseContext(),"토스트으으",Toast.LENGTH_LONG).show();
+                            mRecognizer.startListening(i);
                         }
                         clickCount = 0;
                         duration = 0;
@@ -93,19 +116,6 @@ public class CommandWaitingActivity extends AppCompatActivity {
             return true;
         }
     };
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_command_waiting);
-
-        i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        i.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
-        mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
-        mRecognizer.setRecognitionListener(listener);
-
-    }
 
 
 
