@@ -17,9 +17,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import android.view.View;
+import android.widget.TextView;
+
 import com.indooratlas.android.sdk.IALocationListener;
 import com.indooratlas.android.sdk.IALocationManager;
 import com.indooratlas.android.sdk.IARegion;
+
+import ensharp.yeey.whisperer.Common.VO.PathVO;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
             this.finish();
         }
 //        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
+
     }
 
     /**
@@ -129,5 +135,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void calculatePath(View view) {
+        String departure = ((TextView)findViewById(R.id.departure)).getText().toString();
+        String destination = ((TextView)findViewById(R.id.destination)).getText().toString();
+
+        String departure1 = oDsayServiceManager.getStationCode(departure);
+        String destination2 = oDsayServiceManager.getStationCode(destination);
+
+        oDsayServiceManager.calculatePath("130", "328");
+    }
+
+    public void subwayInfo(View view) {
+        oDsayServiceManager.getSubwayInfo("130");
+    }
+
+    public void subwayTimeTable(View view) {
+        oDsayServiceManager.getSubwayTimeTable("120", "1");
     }
 }
