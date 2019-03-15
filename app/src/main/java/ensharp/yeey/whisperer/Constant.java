@@ -16,4 +16,17 @@ public class Constant {
     public static final int STATION_CODE = 2;
     public static final int STATION_NUMBER = 3;
 
+    //Most Closer Station Constant
+    public static final int MOST_CLOSER_STATION = 0;
+
+    //Permission request Code
+    public static final int PERMISSION_REQUEST_CODE = 1;
+
+    //Touch duration time
+    public static final int MAX_DURATION = 500;
+
+    //Function
+    public static final int NAVIGATE_WAY = 1;
+    public static final int GET_STATION_INFO = 2;
+    public static final int CALL_STATION = 3;
 }
