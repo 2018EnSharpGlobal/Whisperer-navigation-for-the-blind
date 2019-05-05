@@ -29,6 +29,8 @@
     <!-- 음성 인식 -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name = "android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature
         android:name="android.hardware.telephony"
@@ -54,14 +56,16 @@
         <activity
             android:name=".IntroActivity"
             android:theme="@style/IntroTheme">
+        </activity>
+        <activity android:name=".HelpingActivity" />
+        <activity android:name=".CommandWaitingActivity" />
+        <activity android:name=".WatsonAssistant">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".HelpingActivity" />
-        <activity android:name=".CommandWaitingActivity" />
         <activity android:name=".WayFindingActivity"></activity>
     </application>
 

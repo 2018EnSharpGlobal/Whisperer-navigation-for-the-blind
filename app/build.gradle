@@ -43,6 +43,8 @@ dependencies {
         exclude group: "com.android.support"
     }
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation group: 'com.kakao.sdk', name: 'newtone', version: '6.0.1'
+    implementation 'com.ibm.watson.developer_cloud:assistant:6.11.0'
 }
 
 repositories {
