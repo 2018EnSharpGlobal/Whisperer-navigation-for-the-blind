@@ -17,6 +17,10 @@ public class IntroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
 
+
+        Intent intent = new Intent(IntroActivity.this, WatsonAssistant.class);
+        startActivity(intent);
+
         // Intro screen
         try {
             sleep(3000);
