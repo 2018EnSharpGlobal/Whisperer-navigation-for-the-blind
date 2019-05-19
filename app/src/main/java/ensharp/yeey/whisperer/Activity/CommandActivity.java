@@ -1,6 +1,7 @@
 package ensharp.yeey.whisperer.Activity;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -116,9 +117,7 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> texts =  results.getStringArrayList(SpeechRecognizerClient.KEY_RECOGNITION_RESULTS);
-                for (String s : texts){
-                    Log.e("결과",s);
-                }
+                String command = texts.get(0);
             }
 
             @Override
@@ -131,8 +130,43 @@ public class CommandActivity extends AppCompatActivity {
 
             }
         });
+    }
 
+    // Watson API로 처리할 부분
+    private void ExecuteCommand(String command){
+        String intent = AnalyzeCommand(command);
 
+        Intent intent_activity = null;
+
+        switch (intent){
+            case "Navigation":
+                //네비게이션 수행
+                intent_activity = new Intent(getApplicationContext(), WayFindingActivity.class);
+                break;
+            case "Call_Station":
+                //역사무원 전화 (기능 수행)
+
+                break;
+            case "Alarm_Station":
+                // 지하철 정보 알림
+                break;
+            case "Help":
+                // 도움말
+                intent_activity = new Intent(getApplicationContext(), HelpingActivity.class);
+                break;
+        }
+
+        startActivity(intent_activity);
+        this.finish();
+    }
+
+    // 명영어 분석 함수
+    private String AnalyzeCommand(String command){
+        String intent = null;
+
+        //Watosn API로 intent 변수에 의도 넣기
+
+        return intent;
     }
 
     // 터치 연속 2번 감지하는 함수
@@ -147,7 +181,7 @@ public class CommandActivity extends AppCompatActivity {
             // 터치 연속 2번 시 음성 인식 실행
             //client.startRecording(true);
 
-            ttsClient.play("전선미 뚱뙈지");
+            ttsClient.play("박지호 쀼유융신");
         }
 
         return super.onTouchEvent(event);
