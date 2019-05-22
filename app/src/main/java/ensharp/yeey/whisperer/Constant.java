@@ -29,4 +29,18 @@ public class Constant {
     public static final int NAVIGATE_WAY = 1;
     public static final int GET_STATION_INFO = 2;
     public static final int CALL_STATION = 3;
+
+    // IBM Watson Assistant Intent
+
+    // Navigation
+    public static final String COMMAND_BATHROOM = "Bathroom";
+
+    // Alarm
+    public static final String COMMAND_ALARM = "Alarm_Station_Information";
+
+    // Call Station
+    public static final String COMMAND_CALL = "CALL";
+
+    // Helping
+    public static final String COMMAND_HELPING = "Help";
 }
