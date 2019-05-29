@@ -1,8 +1,8 @@
 package ensharp.yeey.whisperer;
 
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.os.Looper;
+import android.util.Log;
+import android.os.Handler;
 
 import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
 import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
@@ -23,6 +23,8 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.logging.LogManager;
 
+import ensharp.yeey.whisperer.Activity.CommandActivity;
+
 public class WatsonAssistant{
 
     private Assistant service;
@@ -32,6 +34,7 @@ public class WatsonAssistant{
     private String sessionId;
 
     public CommandCenter commandCenter;
+    public CommandActivity commandActivity;
 
     String responseText;
     String commandType;
@@ -42,7 +45,7 @@ public class WatsonAssistant{
     JSONObject extraJsonObject;
     JSONArray extraJsonArray;
 
-    public WatsonAssistant(){
+    public WatsonAssistant() {
         assistantId = "613a7993-9a45-4c79-86c5-d8a3fc187907";
         result = new JSONObject();
         extraJsonObject = new JSONObject();
@@ -50,29 +53,6 @@ public class WatsonAssistant{
 
         createService();
     }
-
-//
-//    // 테스트하는 임시 명령어들, 순서대로 명령어 변경
-//    @Override
-//    public void onClick(View v){
-//        // 임시 명령어
-//        if(testNum == 0){
-//            testNum += 1;
-//            testString = "화장실 갈래";
-//            connectWatsonAssistant();
-//        } else if(testNum == 1){
-//            testNum += 1;
-//            testString = "남자";
-//            connectWatsonAssistant();
-//        } else if(testNum == 2){
-//            testNum += 1;
-//            testString = "화장실 갈래";
-//            connectWatsonAssistant();
-//        } else {
-//            testString = "남자";
-//            connectWatsonAssistant();
-//        }
-//    }
 
     // 어시스턴트 서비스 설정
     private void createService() {
@@ -125,11 +105,10 @@ public class WatsonAssistant{
                 if (responseGeneric.size() > 0) {
                     System.out.println(response.getOutput().getGeneric().get(0).getText());
                     responseText = response.getOutput().getGeneric().get(0).getText();
-
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
-
+//                        textToSpeech();
                         // 명령어 파싱
                         try {
                             JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
@@ -146,7 +125,6 @@ public class WatsonAssistant{
                             e.printStackTrace();
                         }
 
-//                        System.out.println(commandType + " " + commandDetail + " " + commandSpecificDetail);
                         createJSONObject(commandType, commandDetail, commandSpecificDetail);
                         deleteService();
                     }
@@ -169,6 +147,29 @@ public class WatsonAssistant{
             // Do something with the exception
         }
         System.out.println(result);
+//        Log.e("responseText: ", responseText);
+//        commandActivity.textToSpeechPlay(responseText);
         commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
     }
+
+//    public void textToSpeech(){
+//
+//        commandActivity = new CommandActivity();
+//        Log.e("responseText: ", responseText);
+//        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//            @Override
+//            public void run() {
+//                commandActivity.textToSpeechPlay(responseText);
+//            }
+//        });
+////        new Thread()
+////        {
+////            public void run()
+////            {
+////
+////                commandActivity.textToSpeechPlay(responseText);
+////
+////            }
+////        }.start();
+//    }
 }

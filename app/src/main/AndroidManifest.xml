@@ -16,7 +16,21 @@
         android:name="android.hardware.wifi"
         android:required="true" />
 
+    <!-- Indooratlas Beacon 사용하는 것을 권장 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
+    <!-- Indooratlas 실내외 탐지 권한 제공 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- 전화 걸기 -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- 음성 인식 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature
         android:name="android.hardware.telephony"
@@ -39,32 +53,22 @@
             android:name="com.indooratlas.android.sdk.API_SECRET"
             android:value="api-secret-here" />
 
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="@string/kakao_app_key" />
+
         <activity
-            android:name=".IntroActivity"
-            android:theme="@style/IntroTheme">
+            android:name=".Activity.IntroActivity"
+            android:theme="@style/IntroTheme"></activity>
+        <activity android:name=".Activity.HelpingActivity" />
+        <activity android:name=".Activity.WayFindingActivity" />
+        <activity android:name=".Activity.CommandActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-        <activity android:name=".HelpingActivity" />
-        <activity android:name=".CommandWaitingActivity">
-            <meta-data
-                android:name="com.kakao.sdk.AppKey"
-                android:value="@string/kakao_app_key" />
-        </activity>
-        <activity android:name=".WayFindingActivity"></activity>
     </application>
 
-    <!-- Indooratlas Beacon 사용하는 것을 권장 -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-
-    <!-- Indooratlas 실내외 탐지 권한 제공 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <!-- 전화 걸기 -->
-    <uses-permission android:name="android.permission.CALL_PHONE" />
-
-    <!-- 음성 인식 -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 </manifest>

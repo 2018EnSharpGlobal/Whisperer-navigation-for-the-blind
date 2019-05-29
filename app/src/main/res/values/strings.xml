@@ -3,6 +3,6 @@
 
     <!--지하철 API key-->
     <string name="odsay_key">0jdKwoVrfQU89HaJTS6E3QZxafC3fOuq/cwBK8/6KZU</string>
-    <string name="kakao_app_key">d0febc809d704a328ebf39a4dd03a8c2</string>
-
+    <!--Kakao API Key-->
+    <string name="kakao_app_key"> 526aed9accc8bad4a3287138ba8fbd67</string>
 </resources>

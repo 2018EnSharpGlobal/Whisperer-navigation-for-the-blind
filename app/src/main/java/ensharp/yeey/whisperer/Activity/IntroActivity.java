@@ -1,11 +1,11 @@
-package ensharp.yeey.whisperer;
+package ensharp.yeey.whisperer.Activity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
+import ensharp.yeey.whisperer.R;
+import ensharp.yeey.whisperer.WatsonAssistant;
 
 import static java.lang.Thread.sleep;
 
@@ -18,7 +18,7 @@ public class IntroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_intro);
 
 
-        Intent intent = new Intent(IntroActivity.this, WatsonAssistant.class);
+        Intent intent = new Intent(IntroActivity.this, CommandActivity.class);
         startActivity(intent);
 
         // Intro screen
@@ -27,8 +27,6 @@ public class IntroActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        startActivity(new Intent(this, CommandWaitingActivity.class));
         finish();
     }
 }

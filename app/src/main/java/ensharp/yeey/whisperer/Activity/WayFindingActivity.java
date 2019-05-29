@@ -1,13 +1,15 @@
-package ensharp.yeey.whisperer;
+package ensharp.yeey.whisperer.Activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class HelpingActivity extends AppCompatActivity {
+import ensharp.yeey.whisperer.R;
+
+public class WayFindingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_helping);
+        setContentView(R.layout.activity_way_finding);
     }
 }
