@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: artifacts:ODsayAndroidSDK:unspecified@jar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/873355959929b7e33d03d999f8c32248/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/873355959929b7e33d03d999f8c32248/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

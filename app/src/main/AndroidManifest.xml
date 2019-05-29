@@ -61,10 +61,6 @@
             android:name=".Activity.IntroActivity"
             android:theme="@style/IntroTheme"></activity>
         <activity android:name=".Activity.HelpingActivity" />
-        <activity android:name=".CommandWaitingActivity" />
-        <activity android:name=".WatsonAssistant">
-
-        </activity>
         <activity android:name=".Activity.WayFindingActivity" />
         <activity android:name=".Activity.CommandActivity">
             <intent-filter>

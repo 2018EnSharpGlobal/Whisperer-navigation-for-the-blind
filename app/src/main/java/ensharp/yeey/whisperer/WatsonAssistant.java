@@ -1,11 +1,8 @@
 package ensharp.yeey.whisperer;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.os.Looper;
+import android.util.Log;
+import android.os.Handler;
 
 import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
 import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
@@ -26,12 +23,9 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.logging.LogManager;
 
-public class WatsonAssistant extends AppCompatActivity implements View.OnClickListener{
-    EditText editText;
-    TextView textView;
-    int testNum = 0;
-    String testString;
-    Button button;
+import ensharp.yeey.whisperer.Activity.CommandActivity;
+
+public class WatsonAssistant{
 
     private Assistant service;
     private SessionResponse watsonAssistantSession;
@@ -39,45 +33,25 @@ public class WatsonAssistant extends AppCompatActivity implements View.OnClickLi
     private String assistantId;
     private String sessionId;
 
+    public CommandCenter commandCenter;
+    public CommandActivity commandActivity;
+
     String responseText;
     String commandType;
     String commandDetail;
     String commandSpecificDetail;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_watson_assistant);
-        textView = (TextView) findViewById(R.id.test);
-        button = (Button) findViewById(R.id.testbutton);
-        button.setOnClickListener(this);
-        editText = (EditText) findViewById(R.id.edittext);
+    JSONObject result;
+    JSONObject extraJsonObject;
+    JSONArray extraJsonArray;
 
+    public WatsonAssistant() {
         assistantId = "613a7993-9a45-4c79-86c5-d8a3fc187907";
+        result = new JSONObject();
+        extraJsonObject = new JSONObject();
+        extraJsonArray = new JSONArray();
 
         createService();
-    }
-
-    // 테스트하는 임시 명령어들, 순서대로 명령어 변경
-    @Override
-    public void onClick(View v){
-        // 임시 명령어
-        if(testNum == 0){
-            testNum += 1;
-            testString = "화장실 갈래";
-            connectWatsonAssistant();
-        } else if(testNum == 1){
-            testNum += 1;
-            testString = "남자";
-            connectWatsonAssistant();
-        } else if(testNum == 2){
-            testNum += 1;
-            testString = "화장실 갈래";
-            connectWatsonAssistant();
-        } else {
-            testString = "남자";
-            connectWatsonAssistant();
-        }
     }
 
     // 어시스턴트 서비스 설정
@@ -93,7 +67,7 @@ public class WatsonAssistant extends AppCompatActivity implements View.OnClickLi
         watsonAssistantSession = null;
     }
 
-    public void connectWatsonAssistant(){
+    public void connectWatsonAssistant(final String inputText){
         // 표준 출력에 로그 메시지를 표시하지 않습니다.
         LogManager.getLogManager().reset();
 
@@ -108,7 +82,7 @@ public class WatsonAssistant extends AppCompatActivity implements View.OnClickLi
                 sessionId = watsonAssistantSession.getSessionId();
 
                 // 대화를 시작하기 위해 빈 값으로 초기화합니다.
-                String inputText = testString;
+
 
                 // 어시스턴트로 메시지를 발송합니다.
                 MessageInput input = new MessageInput.Builder().text(inputText).build();
@@ -131,11 +105,10 @@ public class WatsonAssistant extends AppCompatActivity implements View.OnClickLi
                 if (responseGeneric.size() > 0) {
                     System.out.println(response.getOutput().getGeneric().get(0).getText());
                     responseText = response.getOutput().getGeneric().get(0).getText();
-
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
-
+//                        textToSpeech();
                         // 명령어 파싱
                         try {
                             JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
@@ -152,11 +125,51 @@ public class WatsonAssistant extends AppCompatActivity implements View.OnClickLi
                             e.printStackTrace();
                         }
 
-                        System.out.println(commandType + " " + commandDetail + " " + commandSpecificDetail);
+                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
                         deleteService();
                     }
                 }
             }
         }).start();
     }
+
+    public void createJSONObject(String commandType, String commandDetail, String commandSpecificDetail) {
+        try {
+            result.put("INSTRUCTION", commandType);
+
+            extraJsonObject.put("COMMAND_DESCRIPTION", commandDetail);
+            extraJsonObject.put("OPTIONAL_DESCRIPTION", commandSpecificDetail);
+
+            extraJsonArray.put(extraJsonObject);
+
+            result.put("INFORMATION", extraJsonArray);
+        } catch (JSONException e) {
+            // Do something with the exception
+        }
+        System.out.println(result);
+//        Log.e("responseText: ", responseText);
+//        commandActivity.textToSpeechPlay(responseText);
+        commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
+    }
+
+//    public void textToSpeech(){
+//
+//        commandActivity = new CommandActivity();
+//        Log.e("responseText: ", responseText);
+//        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//            @Override
+//            public void run() {
+//                commandActivity.textToSpeechPlay(responseText);
+//            }
+//        });
+////        new Thread()
+////        {
+////            public void run()
+////            {
+////
+////                commandActivity.textToSpeechPlay(responseText);
+////
+////            }
+////        }.start();
+//    }
 }
