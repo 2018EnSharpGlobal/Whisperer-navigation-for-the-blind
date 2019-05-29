@@ -18,8 +18,11 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
 import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
 import com.ibm.watson.developer_cloud.assistant.v2.model.DeleteSessionOptions;
@@ -71,10 +74,16 @@ public class CommandActivity extends AppCompatActivity {
 
     public WatsonAssistant watsonAssistant;
 
+    ImageView background;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_command);
+
+        background = (ImageView)findViewById(R.id.command_background);
+
+        Glide.with(this).load(R.drawable.command_waiting_image).into(background);
 
         int MyVersion = Build.VERSION.SDK_INT;
 
