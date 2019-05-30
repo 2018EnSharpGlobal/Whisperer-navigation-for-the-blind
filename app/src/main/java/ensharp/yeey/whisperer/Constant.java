@@ -43,4 +43,10 @@ public class Constant {
 
     // Helping
     public static final String COMMAND_HELPING = "Help";
+
+    //Watson Assistant API
+    public static final String ASSISTANT_ID = "613a7993-9a45-4c79-86c5-d8a3fc187907";
+    public static final String WATSON_ASSISTANT_API_KEY = "Y2Tqfxg5kJg3TSCVPoKbRjY64YBLMGC0PPZQfQvX2Gni";
+    public static final String VERSION_DATE = "2018-09-20";
+
 }

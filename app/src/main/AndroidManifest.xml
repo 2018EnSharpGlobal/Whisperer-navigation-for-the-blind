@@ -58,17 +58,19 @@
             android:value="@string/kakao_app_key" />
 
         <activity
-            android:name=".Activity.IntroActivity"
-            android:theme="@style/IntroTheme"></activity>
+            android:name=".Activity.IntroActivity">
+
+
+        </activity>
         <activity android:name=".Activity.HelpingActivity" />
         <activity android:name=".Activity.WayFindingActivity" />
         <activity android:name=".Activity.CommandActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

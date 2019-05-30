@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: com.kakao.sdk:newtone.core-1.1.1.OpenApi">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/newtone.core-1.1.1.OpenApi.aar/1e008cdac76feca6a9be199786fa270a/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/newtone.core-1.1.1.OpenApi.aar/1e008cdac76feca6a9be199786fa270a/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

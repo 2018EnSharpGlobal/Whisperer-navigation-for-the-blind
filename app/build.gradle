@@ -25,7 +25,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
     // TDD를 위한 추가
     androidTestImplementation 'com.android.support:support-annotations:28.0.0'
     androidTestImplementation 'com.android.support.test:rules:1.0.2'
@@ -43,8 +42,9 @@ dependencies {
         exclude group: "com.android.support"
     }
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
-    implementation group: 'com.kakao.sdk', name: 'newtone', version: '6.0.1'
+    implementation 'com.kakao.sdk:newtone:6.0.1'
     implementation 'com.ibm.watson.developer_cloud:assistant:6.11.0'
+
 }
 
 repositories {
@@ -52,7 +52,7 @@ repositories {
     mavenCentral()
     google()
 
-    //indooratlas sdk
+     //indooratlas sdk
     maven {
         url "http://indooratlas-ltd.bintray.com/mvn-public"
     }
