@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: artifacts:ODsayAndroidSDK">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/d6744891ebcfeede60efce9fcb597eee/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/d6744891ebcfeede60efce9fcb597eee/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/b6bab9484f6b88f7cb9cc5930df0e642/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/SDK_release_v1.0.aar/b6bab9484f6b88f7cb9cc5930df0e642/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

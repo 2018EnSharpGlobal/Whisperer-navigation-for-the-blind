@@ -1,9 +1,11 @@
 package ensharp.yeey.whisperer;
 
+import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
 import android.os.Handler;
 
+import com.google.gson.JsonObject;
 import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
 import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
 import com.ibm.watson.developer_cloud.assistant.v2.model.DeleteSessionOptions;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.logging.LogManager;
 
 import ensharp.yeey.whisperer.Activity.CommandActivity;
+import ensharp.yeey.whisperer.Common.VO.AnalyzeVO;
 
 public class WatsonAssistant{
 
@@ -36,35 +39,96 @@ public class WatsonAssistant{
     public CommandCenter commandCenter;
     public CommandActivity commandActivity;
 
-    String responseText;
-    String commandType;
-    String commandDetail;
-    String commandSpecificDetail;
 
     JSONObject result;
     JSONObject extraJsonObject;
     JSONArray extraJsonArray;
 
-    public WatsonAssistant() {
-        assistantId = "613a7993-9a45-4c79-86c5-d8a3fc187907";
-        result = new JSONObject();
-        extraJsonObject = new JSONObject();
-        extraJsonArray = new JSONArray();
+    Context context;
 
-        createService();
+
+//    public WatsonAssistant(Context context) {
+//        this.context = context;
+//        assistantId = "613a7993-9a45-4c79-86c5-d8a3fc187907";
+//        result = new JSONObject();
+//        extraJsonObject = new JSONObject();
+//        extraJsonArray = new JSONArray();
+//        CreateService();
+//    }
+
+
+    public WatsonAssistant(){
+        CreateService();
     }
 
-    // 어시스턴트 서비스 설정
-    private void createService() {
-        iamOptions = new IamOptions.Builder().apiKey("Y2Tqfxg5kJg3TSCVPoKbRjY64YBLMGC0PPZQfQvX2Gni").build();
-        service = new Assistant("2018-09-20", iamOptions);
+    // Watson Assistant 변수 설정
+    private void CreateService() {
+        assistantId = Constant.ASSISTANT_ID;
+        iamOptions = new IamOptions.Builder().apiKey(Constant.WATSON_ASSISTANT_API_KEY).build();
+        service = new Assistant(Constant.VERSION_DATE, iamOptions);
     }
 
     // 세션 삭제, 대화 초기화
-    private void deleteService() {
+    private void DeleteService() {
         DeleteSessionOptions deleteSessionOptions = new DeleteSessionOptions.Builder(assistantId, sessionId).build();
         service.deleteSession(deleteSessionOptions).execute();
         watsonAssistantSession = null;
+    }
+
+    public AnalyzeVO AnalyzeResult(String inputText){
+        AnalyzeVO analyzeVO = new AnalyzeVO();
+
+        if (watsonAssistantSession == null) {
+            ServiceCall<SessionResponse> call = service.createSession(new CreateSessionOptions.Builder().assistantId(assistantId).build());
+            watsonAssistantSession = call.execute();
+        }
+        sessionId = watsonAssistantSession.getSessionId();
+
+        MessageInput input = new MessageInput.Builder().messageType("text").text(inputText).build();
+        MessageOptions options = new MessageOptions.Builder(assistantId,sessionId).input(input).build();
+
+        MessageResponse response = service.message(options).execute();
+
+        List<RuntimeIntent> responseIntents = response.getOutput().getIntents();
+        if (responseIntents.size() > 0) {
+            Log.e("Detected intent: #", responseIntents.get(0).getIntent());
+        }
+
+        List<DialogRuntimeResponseGeneric> responseGeneric = response.getOutput().getGeneric();
+
+        // 단순 대답 응답이 있는 경우
+        if (responseGeneric.size() > 0) {
+            Log.e("Reulst1",response.getOutput().getGeneric().get(0).toString());
+
+            analyzeVO.setLabel(response.getOutput().getGeneric().get(0).getDescription());
+            analyzeVO.setValue(response.getOutput().getGeneric().get(0).getMessageToHumanAgent());
+            analyzeVO.setInput(response.getOutput().getGeneric().get(0).getPreference());
+            analyzeVO.setText(response.getOutput().getGeneric().get(0).getText());
+
+            // 안내 응답이 있는 경우
+            if(responseGeneric.size() > 1) {
+                // 명령어 파싱
+                try {
+                    JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
+                    System.out.println(jsonArray);
+                    for(int i = 0 ; i<jsonArray.length(); i++){
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        analyzeVO.setLabel(jsonObject.getString("label"));
+                        analyzeVO.setValue(jsonObject.getString("value"));
+                        analyzeVO.setInput(jsonObject.getString("input"));
+                        analyzeVO.setText(jsonObject.getString("text"));
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        DeleteService();
+
+        return analyzeVO;
     }
 
     public void connectWatsonAssistant(final String inputText){
@@ -104,72 +168,52 @@ public class WatsonAssistant{
                 // 단순 대답 응답이 있는 경우
                 if (responseGeneric.size() > 0) {
                     System.out.println(response.getOutput().getGeneric().get(0).getText());
-                    responseText = response.getOutput().getGeneric().get(0).getText();
+//                    responseText = response.getOutput().getGeneric().get(0).getText();
+
+
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1) {
-                        commandType= response.getOutput().getGeneric().get(1).getTitle();
-//                        textToSpeech();
-                        // 명령어 파싱
-                        try {
-                            JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
-                            System.out.println(jsonArray);
-                            for(int i = 0 ; i<jsonArray.length(); i++){
-                                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                commandDetail = jsonObject.getString("label");
-                                JSONObject jsonObject1 = jsonObject.optJSONObject("value");
-                                JSONObject jsonObject2 = jsonObject1.optJSONObject("input");
-                                commandSpecificDetail = jsonObject2.optString("text");
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
-                        deleteService();
+//                        commandType= response.getOutput().getGeneric().get(1).getTitle();
+////                        textToSpeech();
+//                        // 명령어 파싱
+//                        try {
+//                            JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
+//                            System.out.println(jsonArray);
+//                            for(int i = 0 ; i<jsonArray.length(); i++){
+//                                JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                                commandDetail = jsonObject.getString("label");
+//                                JSONObject jsonObject1 = jsonObject.optJSONObject("value");
+//                                JSONObject jsonObject2 = jsonObject1.optJSONObject("input");
+//                                commandSpecificDetail = jsonObject2.optString("text");
+//                            }
+//
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
+//                        DeleteService();
                     }
                 }
             }
         }).start();
     }
 
-    public void createJSONObject(String commandType, String commandDetail, String commandSpecificDetail) {
-        try {
-            result.put("INSTRUCTION", commandType);
-
-            extraJsonObject.put("COMMAND_DESCRIPTION", commandDetail);
-            extraJsonObject.put("OPTIONAL_DESCRIPTION", commandSpecificDetail);
-
-            extraJsonArray.put(extraJsonObject);
-
-            result.put("INFORMATION", extraJsonArray);
-        } catch (JSONException e) {
-            // Do something with the exception
-        }
-        System.out.println(result);
-//        Log.e("responseText: ", responseText);
-//        commandActivity.textToSpeechPlay(responseText);
-        commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
-    }
-
-//    public void textToSpeech(){
+//    public void createJSONObject(String commandType, String commandDetail, String commandSpecificDetail) {
+//        try {
+//            result.put("INSTRUCTION", commandType);
 //
-//        commandActivity = new CommandActivity();
-//        Log.e("responseText: ", responseText);
-//        new Handler(Looper.getMainLooper()).post(new Runnable() {
-//            @Override
-//            public void run() {
-//                commandActivity.textToSpeechPlay(responseText);
-//            }
-//        });
-////        new Thread()
-////        {
-////            public void run()
-////            {
-////
-////                commandActivity.textToSpeechPlay(responseText);
-////
-////            }
-////        }.start();
+//            extraJsonObject.put("COMMAND_DESCRIPTION", commandDetail);
+//            extraJsonObject.put("OPTIONAL_DESCRIPTION", commandSpecificDetail);
+//
+//            extraJsonArray.put(extraJsonObject);
+//
+//            result.put("INFORMATION", extraJsonArray);
+//        } catch (JSONException e) {
+//            // Do something with the exception
+//        }
+//        System.out.println(result);
+//        commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
 //    }
+
 }

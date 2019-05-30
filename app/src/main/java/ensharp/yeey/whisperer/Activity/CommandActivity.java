@@ -3,56 +3,32 @@ package ensharp.yeey.whisperer.Activity;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
-import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
-import com.ibm.watson.developer_cloud.assistant.v2.model.DeleteSessionOptions;
-import com.ibm.watson.developer_cloud.assistant.v2.model.DialogRuntimeResponseGeneric;
-import com.ibm.watson.developer_cloud.assistant.v2.model.MessageInput;
-import com.ibm.watson.developer_cloud.assistant.v2.model.MessageOptions;
-import com.ibm.watson.developer_cloud.assistant.v2.model.MessageResponse;
-import com.ibm.watson.developer_cloud.assistant.v2.model.RuntimeIntent;
-import com.ibm.watson.developer_cloud.assistant.v2.model.SessionResponse;
-import com.ibm.watson.developer_cloud.http.ServiceCall;
-import com.ibm.watson.developer_cloud.service.security.IamOptions;
 import com.kakao.sdk.newtoneapi.SpeechRecognizeListener;
 import com.kakao.sdk.newtoneapi.SpeechRecognizerClient;
 import com.kakao.sdk.newtoneapi.SpeechRecognizerManager;
 import com.kakao.sdk.newtoneapi.TextToSpeechClient;
+import com.kakao.sdk.newtoneapi.TextToSpeechListener;
 import com.kakao.sdk.newtoneapi.TextToSpeechManager;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.LogManager;
 
+import ensharp.yeey.whisperer.AnalyzeCommandTask;
 import ensharp.yeey.whisperer.Constant;
 import ensharp.yeey.whisperer.R;
-import ensharp.yeey.whisperer.WatsonAssistant;
 
 public class CommandActivity extends AppCompatActivity {
 
@@ -60,34 +36,25 @@ public class CommandActivity extends AppCompatActivity {
     private long resetTime = 2000;
 
     private SpeechRecognizerClient client;
-    private TextToSpeechClient ttsClient;
 
     static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
 
-    // IBM Watson assistant
-    private Assistant service;
-    private SessionResponse watsonAssistantSession;
-    private IamOptions iamOptions;
-    private String assistantId;
-    private String sessionId;
-
-    public WatsonAssistant watsonAssistant;
-
     ImageView background;
+
+    String input;
+
+    TextToSpeechClient ttsClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_command);
-
         background = (ImageView)findViewById(R.id.command_background);
 
         Glide.with(this).load(R.drawable.command_waiting_image).into(background);
 
         int MyVersion = Build.VERSION.SDK_INT;
-
-        watsonAssistant = new WatsonAssistant();
 
         //버전 체크
         if (MyVersion >= Build.VERSION_CODES.O) {
@@ -97,17 +64,28 @@ public class CommandActivity extends AppCompatActivity {
             this.finish();
         }
 
-        // 초기화
-//        InitializeWatsonAssistant();
         InitializeSpeechRecognize();
-        InitializeTextToSpeech();
+
+        TextToSpeechManager.getInstance().initializeLibrary(this);
+
+        ttsClient = new TextToSpeechClient.Builder()
+                .setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1)
+                .setSpeechSpeed(1.0)
+                .setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM)
+                .setListener(new TextToSpeechListener() {
+                    @Override
+                    public void onFinished() {
+                        Log.e("출력","해라");
+                    }
+
+                    @Override
+                    public void onError(int code, String message) {
+
+                    }
+                })
+                .build();
+
     }
-    // IBM Watson 변수 초기화
-//    private void InitializeWatsonAssistant(){
-//        iamOptions = new IamOptions.Builder().apiKey("Y2Tqfxg5kJg3TSCVPoKbRjY64YBLMGC0PPZQfQvX2Gni").build();
-//        service = new Assistant("2018-09-20", iamOptions);
-//        assistantId = "613a7993-9a45-4c79-86c5-d8a3fc187907";
-//    }
 
     // STT 초기화
     private void InitializeSpeechRecognize(){
@@ -147,8 +125,15 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> texts =  results.getStringArrayList(SpeechRecognizerClient.KEY_RECOGNITION_RESULTS);
-                watsonAssistant.connectWatsonAssistant(texts.get(0));
+                input = texts.get(0);
                 Log.e("result", texts.get(0));
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        new AnalyzeCommandTask(getApplicationContext(), input).execute();
+                    }
+                });
             }
 
             @Override
@@ -163,36 +148,21 @@ public class CommandActivity extends AppCompatActivity {
         });
     }
 
-    // TTS 초기화
-    private void InitializeTextToSpeech(){
-        TextToSpeechManager.getInstance().initializeLibrary(getApplicationContext());
-
-        ttsClient = new TextToSpeechClient.Builder()
-                .setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1)     // 음성합성방식
-                .setSpeechSpeed(1.0)            // 발음 속도(0.5~4.0)
-                .setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM)  //TTS 음색 모드 설정(여성 차분한 낭독체)
-                .build();
-    }
-
-    public void textToSpeechPlay(String speechText) {
-        ttsClient.play(speechText);
-    }
-
     // 터치 연속 2번 감지하는 함수
     @Override
     public boolean onTouchEvent (MotionEvent event){
+        switch(event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                if(System.currentTimeMillis() > touchPressedTime + 1500){
+                    touchPressedTime = System.currentTimeMillis();
+                    return false;
+                }
+                if(System.currentTimeMillis() <= touchPressedTime + 1500){
 
-        if (System.currentTimeMillis() > touchPressedTime + resetTime) {
-            touchPressedTime = System.currentTimeMillis();
+                    client.startRecording(true);
+                }
+                break;
         }
-
-        if (System.currentTimeMillis() <= touchPressedTime + resetTime) {
-            // 터치 연속 2번 시 음성 인식 실행
-            client.startRecording(true);
-
-//            ttsClient.play("박지호 쀼유융신");
-        }
-
         return super.onTouchEvent(event);
     }
 
@@ -200,29 +170,6 @@ public class CommandActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         SpeechRecognizerManager.getInstance().finalizeLibrary();
-        TextToSpeechManager.getInstance().finalizeLibrary();
-    }
-
-
-    private void ExectueCommand(String command){
-        switch(command){
-            case Constant.COMMAND_HELPING:
-                break;
-            case Constant.COMMAND_ALARM:
-                break;
-            case Constant.COMMAND_BATHROOM:
-                Log.e("화장실","화장실로 안내합니다");
-                break;
-            case Constant.COMMAND_CALL:
-                break;
-        }
-    }
-
-    // 세션 삭제, 대화 초기화
-    private void deleteService() {
-        DeleteSessionOptions deleteSessionOptions = new DeleteSessionOptions.Builder(assistantId, sessionId).build();
-        service.deleteSession(deleteSessionOptions).execute();
-        watsonAssistantSession = null;
     }
 
     //권학 확인하는 함수

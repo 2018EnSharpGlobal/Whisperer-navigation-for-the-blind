@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 
 import ensharp.yeey.whisperer.R;
-import ensharp.yeey.whisperer.WatsonAssistant;
 
 import static java.lang.Thread.sleep;
 
@@ -25,15 +24,18 @@ public class IntroActivity extends AppCompatActivity {
 
         Glide.with(this).load(R.drawable.introimage3).into(background);
 
-        // Intro screen
-        try {
-            sleep(3000);
+        try{
+            sleep(800);
+        }
+        catch(Exception e)
+        {
 
-//            Intent intent = new Intent(IntroActivity.this, CommandActivity.class);
-//            startActivity(intent);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
 
+        Intent intent = new Intent(this, CommandActivity.class);
+        startActivity(intent);
+        finish();
     }
+
+
 }
