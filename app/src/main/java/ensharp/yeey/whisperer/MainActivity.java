@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void initSubwayAPI() {
         oDsayServiceManager = ODsayServiceManager.getInstance();
-        oDsayServiceManager.setMainActivity(this);
         oDsayServiceManager.initAPI(this);
     }
 
@@ -175,16 +174,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    public void calculatePath(View view) {
-        String departure = ((TextView)findViewById(R.id.departure)).getText().toString();
-        String destination = ((TextView)findViewById(R.id.destination)).getText().toString();
-
-        String departure1 = oDsayServiceManager.getStationCode(departure);
-        String destination2 = oDsayServiceManager.getStationCode(destination);
-
-        oDsayServiceManager.calculatePath("130", "328");
     }
 
     public void subwayInfo(View view) {
