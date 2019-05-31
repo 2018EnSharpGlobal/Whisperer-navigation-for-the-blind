@@ -110,6 +110,8 @@ class ODsayServiceManager {
                     path = parseManager.parsePath(jsonObject);
                     // path 이용 메소드 올 곳
                     ((TextView)((Activity)context).findViewById(R.id.result)).setText(path.toString());
+
+                    Log.e(TAG, "Path: " + path.toString());
                     break;
                 case "POINT_SEARCH":
                     // 가장 가까운 지하철 역 찾아서 전화하기
@@ -120,18 +122,21 @@ class ODsayServiceManager {
                     station = parseManager.parseStation(jsonObject);
                     // station 이용 메소드 올 곳
                     ((TextView)((Activity)context).findViewById(R.id.result)).setText(station.toString());
+
+                    Log.e(TAG, "Subway: " + station.toString());
                         break;
                 case "SUBWAY_TIME_TABLE":
                     timeTable = parseManager.parseTimeTable(jsonObject, wayCode);
                     // timeTable 이용 메소드 올 곳
                     ((TextView)((Activity)context).findViewById(R.id.result)).setText(timeTable.toString());
+
+                    Log.e(TAG, "TimeTable: " + timeTable.toString());
                     break;
                 default:
                     Log.e(TAG, "api 이름: " + api.name());
                     break;
             }
 
-            Log.e(TAG, "onSuccess: " + jsonObject.toString());
         }
 
         @Override

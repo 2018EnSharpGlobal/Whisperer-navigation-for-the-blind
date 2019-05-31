@@ -126,6 +126,7 @@ public class ParseManager {
      * @return 파싱된 SubwayStationIfoVO List
      */
     public List<SubwayStationInfoVO> parseExOBJ(JsonElement jsonElement) {
+        Log.e("JSONELEMENT",jsonElement.toString());
         return new Parser<>(SubwayStationInfoVO.class, "station").parseList(jsonElement, new TypeToken<List<SubwayStationInfoVO>>() {}.getType());
     }
 

@@ -66,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "버전이 맞지 않아 이 앱을 사용할 수 없습니다.", Toast.LENGTH_LONG).show();
             this.finish();
         }
-//        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
 
+//        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
+//        oDsayServiceManager.calculatePath("어린이대공원","광나루");
+        oDsayServiceManager.getSubwayInfo("130");
+//        oDsayServiceManager.getSubwayTimeTable("어린이대공원", "1");
     }
 
     /**
