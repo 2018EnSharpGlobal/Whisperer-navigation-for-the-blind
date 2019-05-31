@@ -4,21 +4,16 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -48,34 +43,25 @@ import com.kakao.sdk.newtoneapi.SpeechRecognizeListener;
 import com.kakao.sdk.newtoneapi.SpeechRecognizerClient;
 import com.kakao.sdk.newtoneapi.SpeechRecognizerManager;
 import com.kakao.sdk.newtoneapi.TextToSpeechClient;
+import com.kakao.sdk.newtoneapi.TextToSpeechListener;
 import com.kakao.sdk.newtoneapi.TextToSpeechManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import android.os.Handler;
 import java.util.logging.LogManager;
 
 import ensharp.yeey.whisperer.CommandCenter;
 import ensharp.yeey.whisperer.Constant;
 import ensharp.yeey.whisperer.R;
-import ensharp.yeey.whisperer.WatsonAssistant;
 
 public class CommandActivity extends AppCompatActivity {
 
-    private long touchPressedTime = 0;
-    private long resetTime = 2000;
-
     private SpeechRecognizerClient client;
     private TextToSpeechClient ttsClient;
-
-    static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
-    static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
 
     // IBM Watson assistant
     private Assistant service;
@@ -84,14 +70,12 @@ public class CommandActivity extends AppCompatActivity {
     private String assistantId;
     private String sessionId;
 
-    public WatsonAssistant watsonAssistant;
-
     public CommandCenter commandCenter;
 
-    String responseText;
     String commandType;
     String commandDetail;
     String commandSpecificDetail;
+    String responseText;
 
     JSONObject result;
     JSONObject extraJsonObject;
@@ -112,15 +96,16 @@ public class CommandActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        // 음성 입력중 textView
         enteringTextView = (TextView)(findViewById(R.id.entering_Voice_TextView));
         enteringTextView.setVisibility(View.INVISIBLE);
 
         findViewById(R.id.listen_image).bringToFront();
+
+        // 뾰로롱 애니메이션
         fadeInOutAnimation();
 
         int MyVersion = Build.VERSION.SDK_INT;
-
-//        watsonAssistant = new WatsonAssistant();
 
         //버전 체크
         if (MyVersion >= Build.VERSION_CODES.O) {
@@ -131,7 +116,6 @@ public class CommandActivity extends AppCompatActivity {
         }
 
         // 초기화
-//        InitializeWatsonAssistant();
         InitializeSpeechRecognize();
         InitializeTextToSpeech();
 
@@ -142,10 +126,7 @@ public class CommandActivity extends AppCompatActivity {
 
         createService();
 
-
         final Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
-
-        ttsClient.play("전세영병신");
 
         listener = new GestureDetector.SimpleOnGestureListener(){
             @Override
@@ -166,6 +147,7 @@ public class CommandActivity extends AppCompatActivity {
                 return detector.onTouchEvent(event);
             }
         });
+
 
     }
 
@@ -207,9 +189,9 @@ public class CommandActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> texts =  results.getStringArrayList(SpeechRecognizerClient.KEY_RECOGNITION_RESULTS);
-//                watsonAssistant.connectWatsonAssistant(texts.get(0));
                 Log.e("result", texts.get(0));
                 connectWatsonAssistant(texts.get(0));
+                enteringTextView.setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -226,69 +208,83 @@ public class CommandActivity extends AppCompatActivity {
 
     // TTS 초기화
     private void InitializeTextToSpeech(){
-        TextToSpeechManager.getInstance().initializeLibrary(getApplicationContext());
+        TextToSpeechManager.getInstance().initializeLibrary(this);
+        if(ttsClient != null && ttsClient.isPlaying()){
+            ttsClient.stop();
+            Log.e("지움", "지움");
+            return;
+        }
 
-        ttsClient = new TextToSpeechClient.Builder()
-                .setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1)     // 음성합성방식
-                .setSpeechSpeed(1.0)            // 발음 속도(0.5~4.0)
-                .setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM)  //TTS 음색 모드 설정(여성 차분한 낭독체)
-                .build();
+        ttsClient = new TextToSpeechClient.Builder().setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1).setSpeechSpeed(1.0).
+                setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM).setListener(new TextToSpeechListener() {
+            @Override
+            public void onFinished() {
+                int intSentSize = ttsClient.getSentDataSize();
+                int intRecvSize = ttsClient.getReceivedDataSize();
+
+                final String strInacctiveText = "onFinished() SentSize : " + intSentSize + " RecvSize : " + intRecvSize;
+
+                Log.e("finished", strInacctiveText);
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                handleError(code);
+            }
+        }).build();
+
+        // audio 출력 최대
+        AudioManager audio = (AudioManager)getApplicationContext().getSystemService(getApplicationContext().AUDIO_SERVICE);
+        audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
     }
 
-    public void textToSpeechPlay(String speechText){
-        ttsClient.play(speechText);
-    }
+    private void handleError(int errorCode) {
+        String errorText;
+        switch (errorCode) {
+            case TextToSpeechClient.ERROR_NETWORK:
+                errorText = "네트워크 오류";
+                break;
+            case TextToSpeechClient.ERROR_NETWORK_TIMEOUT:
+                errorText = "네트워크 지연";
+                break;
+            case TextToSpeechClient.ERROR_CLIENT_INETRNAL:
+                errorText = "음성합성 클라이언트 내부 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_INTERNAL:
+                errorText = "음성합성 서버 내부 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_TIMEOUT:
+                errorText = "음성합성 서버 최대 접속시간 초과";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_AUTHENTICATION:
+                errorText = "음성합성 인증 실패";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_BAD:
+                errorText = "음성합성 텍스트 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_EXCESS:
+                errorText = "음성합성 텍스트 허용 길이 초과";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_UNSUPPORTED_SERVICE:
+                errorText = "음성합성 서비스 모드 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_ALLOWED_REQUESTS_EXCESS:
+                errorText = "허용 횟수 초과";
+                break;
+            default:
+                errorText = "정의하지 않은 오류";
+                break;
+        }
 
-//    // 터치 연속 2번 감지하는 함수
-//    @Override
-//    public boolean onTouchEvent (MotionEvent event){
-//
-//        if (System.currentTimeMillis() > touchPressedTime + resetTime) {
-//            touchPressedTime = System.currentTimeMillis();
-//        }
-//
-//        if (System.currentTimeMillis() <= touchPressedTime + resetTime) {
-//            // 터치 연속 2번 시 음성 인식 실행
-//            enteringTextView.setVisibility(View.VISIBLE);
-//            client.startRecording(true);
-////            if (responseText == null)
-////                ttsClient.play("전세영 쀼유융신");
-////            else
-////                ttsClient.play(responseText);
-//        }
-//
-//        return super.onTouchEvent(event);
-//    }
+        final String statusMessage = errorText + " (" + errorCode + ")";
+
+        Log.e("Error", statusMessage);
+    }
 
     // 더 이상 쓰지 않는 경우에는 다음과 같이 해제
     public void onDestroy() {
         super.onDestroy();
-//        Log.e("종료", responseText);
-//        ttsClient.play();
         SpeechRecognizerManager.getInstance().finalizeLibrary();
-//        TextToSpeechManager.getInstance().finalizeLibrary();
-    }
-
-    public void onPause() {
-        super.onPause();
-//        Log.e("멈춤", responseText);
-//        ttsClient.play();
-    }
-
-
-
-    private void ExectueCommand(String command){
-        switch(command){
-            case Constant.COMMAND_HELPING:
-                break;
-            case Constant.COMMAND_ALARM:
-                break;
-            case Constant.COMMAND_BATHROOM:
-                Log.e("화장실","화장실로 안내합니다");
-                break;
-            case Constant.COMMAND_CALL:
-                break;
-        }
     }
 
     //권학 확인하는 함수
@@ -421,16 +417,10 @@ public class CommandActivity extends AppCompatActivity {
                     responseText = response.getOutput().getGeneric().get(0).getText();
                     speechFlag = false;
                     Log.e("response: ", responseText);
-                    ttsClient.setSpeechText(responseText);
-//                    TTStest();
-//                    ttsClient.play(responseText);
-//                    Handler mHandler = new Handler(Looper.getMainLooper());
-//                    mHandler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            ttsClient.play(responseText);
-//                        }
-//                    }, 0);
+                    AudioManager audio = (AudioManager)getApplicationContext().getSystemService(getApplicationContext().AUDIO_SERVICE);
+                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+                    // tts 출력
+                    ttsClient.play(responseText);
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1 && response.getOutput().getGeneric().get(1).getOptions() != null) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
@@ -457,9 +447,6 @@ public class CommandActivity extends AppCompatActivity {
         }).start();
     }
 
-    public synchronized void TTStest(){
-        ttsClient.play();
-    }
 
     public void createJSONObject(String commandType, String commandDetail, String commandSpecificDetail) {
         try {
@@ -476,11 +463,7 @@ public class CommandActivity extends AppCompatActivity {
         }
         System.out.println(result);
         Log.e("json: ", responseText);
-//        commandActivity.textToSpeechPlay(responseText);
-//        InitializeTextToSpeech();
 
-
-//        ttsClient.play(responseText);
         commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
     }
 
@@ -507,8 +490,6 @@ public class CommandActivity extends AppCompatActivity {
         iv.setAnimation(animation);
     }
 }
-
-
 
 
 
