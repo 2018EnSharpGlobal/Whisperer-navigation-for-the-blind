@@ -31,6 +31,8 @@ public class AnalyzeCommandTask extends AsyncTask {
     private String inputText;
     private String resultText;
 
+    AnalyzeVO analyzeVO;
+
     public AnalyzeCommandTask(Context context,String inputText) {
 
         this.context = context;
@@ -39,18 +41,23 @@ public class AnalyzeCommandTask extends AsyncTask {
         kakaoTTSManager = KakaoTTSManager.getInstance();
         kakaoTTSManager.InitTTSClient(context);
 
-        watsonAssistant = new WatsonAssistant();
+        if(watsonAssistant == null)
+            watsonAssistant = new WatsonAssistant();
     }
 
     @Override
     protected Object doInBackground(Object[] objects) {
-        AnalyzeVO analyzeVO = watsonAssistant.AnalyzeResult(inputText);
+        watsonAssistant.AnalyzeResult(inputText);
 
         resultText = analyzeVO.getText();
 
         Log.e("텍스트",analyzeVO.getText().toString());
 
         return analyzeVO.getText();
+    }
+
+    public void GetObject(AnalyzeVO analyzeVO) {
+        this.analyzeVO = analyzeVO;
     }
 
     @Override

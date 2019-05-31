@@ -13,7 +13,7 @@ import ensharp.yeey.whisperer.Common.ParseManager;
 public class KakaoTTSManager {
     private static final KakaoTTSManager ourInstance = new KakaoTTSManager();
 
-    static KakaoTTSManager getInstance() {
+    public static KakaoTTSManager getInstance() {
         return ourInstance;
     }
 
@@ -26,6 +26,10 @@ public class KakaoTTSManager {
     public void InitTTSClient(Context context){
         TextToSpeechManager.getInstance().initializeLibrary(context);
         SetTTSClient(context);
+    }
+
+    public TextToSpeechClient GetTTSClient() {
+        return ttsClient;
     }
 
     private void SetTTSClient(Context context){
