@@ -2,6 +2,10 @@ package ensharp.yeey.whisperer.Activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 
 import ensharp.yeey.whisperer.R;
 

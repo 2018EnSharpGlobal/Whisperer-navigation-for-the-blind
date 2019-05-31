@@ -491,14 +491,3 @@ public class CommandActivity extends AppCompatActivity {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
