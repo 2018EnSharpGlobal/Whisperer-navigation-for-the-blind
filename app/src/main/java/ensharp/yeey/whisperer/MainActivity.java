@@ -66,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "버전이 맞지 않아 이 앱을 사용할 수 없습니다.", Toast.LENGTH_LONG).show();
             this.finish();
         }
-//        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
 
+//        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
+//        oDsayServiceManager.calculatePath("어린이대공원","광나루");
+        oDsayServiceManager.getSubwayInfo("130");
+//        oDsayServiceManager.getSubwayTimeTable("어린이대공원", "1");
     }
 
     /**
@@ -96,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void initSubwayAPI() {
         oDsayServiceManager = ODsayServiceManager.getInstance();
-        oDsayServiceManager.setMainActivity(this);
         oDsayServiceManager.initAPI(this);
     }
 
@@ -175,16 +177,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    public void calculatePath(View view) {
-        String departure = ((TextView)findViewById(R.id.departure)).getText().toString();
-        String destination = ((TextView)findViewById(R.id.destination)).getText().toString();
-
-        String departure1 = oDsayServiceManager.getStationCode(departure);
-        String destination2 = oDsayServiceManager.getStationCode(destination);
-
-        oDsayServiceManager.calculatePath("130", "328");
     }
 
     public void subwayInfo(View view) {

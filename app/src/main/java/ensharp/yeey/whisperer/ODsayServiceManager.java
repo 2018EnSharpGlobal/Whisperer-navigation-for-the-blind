@@ -1,12 +1,14 @@
 package ensharp.yeey.whisperer;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -57,11 +59,11 @@ class ODsayServiceManager {
         return ourInstance;
     }
 
-    private MainActivity mainActivity;
-
     private ODsayService odsayService;
     private JSONObject jsonObject;
     private ParseManager parseManager;
+    ExcelManager excelManager;
+
 
     private PathVO path;
     private CloserStationVO closerStation;
@@ -70,7 +72,7 @@ class ODsayServiceManager {
     private SubwayStationInfoVO station;
     private SubwayTimeTableVO timeTable;
 
-    private String wayCode;
+    String wayCode;
 
     private static String TAG = "API Callback";
 
@@ -78,20 +80,18 @@ class ODsayServiceManager {
         parseManager = ParseManager.getInstance();
     }
 
-    public void setMainActivity(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
-    }
-//    public void setContext(Context _context) { this.context = _context; }
+    public void setContext(Context _context) { this.context = _context; }
 
     /**
      * 지하철 운행정보를 가져오는 API를 호출합니다.
      * ODsayService 객체는 싱글톤으로 생성됩니다.
      */
     public void initAPI(Context _context) {
-        odsayService = ODsayService.init(mainActivity, mainActivity.getString(R.string.odsay_key));
+        this.context = _context;
+        odsayService = ODsayService.init(context, context.getString(R.string.odsay_key));
+        excelManager = new ExcelManager(context);
         odsayService.setReadTimeout(5000);
         odsayService.setConnectionTimeout(5000);
-        this.context = _context;
     }
 
     /**
@@ -109,28 +109,34 @@ class ODsayServiceManager {
                 case "SUBWAY_PATH": // 지하철 경로 검색
                     path = parseManager.parsePath(jsonObject);
                     // path 이용 메소드 올 곳
-                    ((TextView)mainActivity.findViewById(R.id.result)).setText(path.toString());
+                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(path.toString());
+
+                    Log.e(TAG, "Path: " + path.toString());
                     break;
                 case "POINT_SEARCH":
-                    //closerStation = parseCloserStation(jsonObject);
+                    // 가장 가까운 지하철 역 찾아서 전화하기
+                    closerStation = parseManager.parseCloserStation(jsonObject);
                     CallStation(closerStation.getCloserStationList().get(Constant.MOST_CLOSER_STATION));
                     break;
                 case "SUBWAY_STATION_INFO": // 지하철역 세부 정보
                     station = parseManager.parseStation(jsonObject);
                     // station 이용 메소드 올 곳
-                    ((TextView)mainActivity.findViewById(R.id.result)).setText(station.toString());
+                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(station.toString());
+
+                    Log.e(TAG, "Subway: " + station.toString());
                         break;
                 case "SUBWAY_TIME_TABLE":
                     timeTable = parseManager.parseTimeTable(jsonObject, wayCode);
                     // timeTable 이용 메소드 올 곳
-                    ((TextView)mainActivity.findViewById(R.id.result)).setText(timeTable.toString());
+                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(timeTable.toString());
+
+                    Log.e(TAG, "TimeTable: " + timeTable.toString());
                     break;
                 default:
                     Log.e(TAG, "api 이름: " + api.name());
                     break;
             }
 
-            Log.e(TAG, "onSuccess: " + jsonObject.toString());
         }
 
         @Override
@@ -148,73 +154,18 @@ class ODsayServiceManager {
      * 출발역과 도착역의 코드를 파라미터로 전달하면 이동 경로를 계산합니다.
      * requestSubwayPath는 비동기로 진행됩니다.
      * 계산된 이동 경로는 path에 저장됩니다.
-     * @param start 출발역 코드
-     * @param end 도착역 코드
+     * @param departure 출발역 이름
+     * @param destination 도착역 이름
      */
-    public void calculatePath(String start, String end) {
-        odsayService.requestSubwayPath("1000", start, end, "2", onResultCallbackListener);
+    public void calculatePath(String departure, String destination) {
+        String startCode = excelManager.Find_Data(departure,Constant.STATION_NAME,Constant.STATION_CODE);
+        String endCode = excelManager.Find_Data(destination,Constant.STATION_NAME,Constant.STATION_CODE);
+        odsayService.requestSubwayPath("1000", startCode, endCode, "2", onResultCallbackListener);
     }
 
-    /**
-     * 지하철역의 세부 정보를 가져오는 메소드입니다.
-     * 정보는 station에 저장됩니다.
-     * @param station 지하철역 코드
-     */
-    //예진이 처리
-//    public PathVO parsePath(JSONObject jsonObject) {
-//        Gson gson = new GsonBuilder()
-//                .registerTypeAdapter(PathVO.class, new RestDeserializer<>(PathVO.class, "result"))
-//                .create();
-//        PathVO path = gson.fromJson(jsonObject.toString(), PathVO.class);
-//
-//        if (path.getExChangeInfoSet() == null)
-//            return path;
-//
-//        Log.e("1","1");
-//
-//        path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
-//
-//        return path;
-//    }
-
-    /**
-     * 가까운 지하철 정보를 파싱하는 메소드입니다.
-     * @param jsonObject API에서 반환된 JSONObject
-     * @return 파싱된 PathVO 객체
-     */
-    //예진이 처리
-//    public CloserStationVO parseCloserStation(JSONObject jsonObject) {
-//        Gson gson = new GsonBuilder()
-//                .registerTypeAdapter(CloserStationVO.class, new RestDeserializer<>(CloserStationVO.class, "result"))
-//                .create();
-//
-//        CloserStationVO closerStationVO = gson.fromJson(jsonObject.toString(), CloserStationVO.class);
-//
-//        closerStationVO.setCloserStationList(parseStation(closerStationVO.getStation()));
-//
-//        return closerStationVO;
-//    }
-
-    /**
-     * 가까운 지하철 정보 순으로 파싱하는 메소드입니다.
-     * @param jsonObject 가까운 역 정보를 담고있는 jsonObject
-     * @return 파싱된 ExchangeInfoVO List
-     */
-    public List<StationVO> parseStation(JsonElement jsonObject) {
-        Gson gson = new Gson();
-
-        Type listType = new TypeToken<List<StationVO>>() {}.getType();
-
-        List<StationVO> stationList = (List<StationVO>) gson.fromJson(jsonObject, listType);
-
-        return stationList;
-    }
 
     //해당 역 코드로 전화번호를 찾아서 전화 걸기
-    public void CallStation(StationVO mCloserStation){
-
-        ExcelManager excelManager = new ExcelManager();
-        excelManager.setContext(context);
+    private void CallStation(StationVO mCloserStation){
         String stationNumber = excelManager.Find_Data(String.valueOf(mCloserStation.getStationID())
                 , Constant.STATION_CODE, Constant.STATION_NUMBER);
         Log.e("stationNumber",stationNumber);
@@ -227,76 +178,19 @@ class ODsayServiceManager {
         }
     }
 
-    /**
-     * 지하철 환승 정보를 파싱하는 메소드입니다.
-     * @param jsonObject 환승 정보를 담고있는 jsonObject
-     * @return 파싱된 ExchangeInfoVO List
-     */
-    public List<ExchangeInfoVO> parseExchangeInfo(JsonElement jsonObject) {
-        Gson gson = new Gson();
-        JsonParser parser = new JsonParser();
-        JsonElement rootElement = parser.parse(jsonObject.toString())
-                .getAsJsonObject().get("exChangeInfo");
-        Type listType = new TypeToken<List<ExchangeInfoVO>>() {
-        }.getType();
-        List<ExchangeInfoVO> exchangeInfoList = (List<ExchangeInfoVO>) gson.fromJson(rootElement, listType);
-
-        return exchangeInfoList;
-    }
-
     public void getSubwayInfo(String station) {
         odsayService.requestSubwayStationInfo(station, onResultCallbackListener);
     }
 
-
-
     /**
      * 지하철역의 시간표를 가져오는 메소드입니다.
      * 정보는 timeTable에 저장됩니다.
-     * @param station 지하철역 코드
+     * @param stationName 지하철역 이름
      * @param wayCode 상행/하행 여부
      */
-    public void getSubwayTimeTable(String station, String wayCode) {
+    public void getSubwayTimeTable(String stationName, String wayCode) {
         this.wayCode = wayCode;
-        odsayService.requestSubwayTimeTable(station, wayCode, onResultCallbackListener);
-    }
-
-    /**
-     * 지하철역의 이름을 입력하면 해당 역의 코드를 반환하는 메소드입니다.
-     * @param station 역명
-     * @return 지하철역 코드
-     * String station_code = excelManager.Find_Data(station, Constant.STATION_NAME, Constant.STATION_CODE);
-     */
-    public String getStationCode(String station) {
-        InputStream inputStream = null;
-        Workbook workbook = null;
-        Sheet sheet = null;
-        try {
-            inputStream = mainActivity.getAssets().open("station_data.xls");
-            workbook = Workbook.getWorkbook(inputStream);
-            sheet = workbook.getSheet(0);
-
-            int rowStart = 1;
-            int rowEnd = sheet.getColumn(0).length;
-            int nameColumn = 1;
-            int codeColumn = 2;
-
-            for(int row = rowStart; row <= rowEnd; row++) {
-                String name = sheet.getCell(nameColumn, row).getContents();
-                if(name.equals(station)){
-                    return sheet.getCell(codeColumn, row).getContents();
-                }
-            }
-
-            return "";
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
-        } catch (BiffException e) {
-            e.printStackTrace();
-            return "";
-        } finally {
-            workbook.close();
-        }
+        String station_code = excelManager.Find_Data(stationName, Constant.STATION_NAME, Constant.STATION_CODE);
+        odsayService.requestSubwayTimeTable(station_code, wayCode, onResultCallbackListener);
     }
 }

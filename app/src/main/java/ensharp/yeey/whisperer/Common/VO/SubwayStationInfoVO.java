@@ -124,7 +124,6 @@ public class SubwayStationInfoVO {
                 + ", type=" + type
                 + ", laneName=" + laneName
                 + ", isExOBJ null?" + String.valueOf(exOBJ == null)
-                + ", exOBJList=" + exOBJList.toString()
                 + ", isUseInfo null?" + String.valueOf(useInfo == null)
                 + ", isExitInfo null?" + String.valueOf(exitInfo == null)
                 + "]";

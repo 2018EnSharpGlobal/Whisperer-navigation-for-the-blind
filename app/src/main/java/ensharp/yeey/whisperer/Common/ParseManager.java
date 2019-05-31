@@ -20,10 +20,12 @@ import java.util.List;
 
 import ensharp.yeey.whisperer.Common.VO.BusStopVO;
 import ensharp.yeey.whisperer.Common.VO.BusVO;
+import ensharp.yeey.whisperer.Common.VO.CloserStationVO;
 import ensharp.yeey.whisperer.Common.VO.DefaultInfoVO;
 import ensharp.yeey.whisperer.Common.VO.ExchangeInfoVO;
 import ensharp.yeey.whisperer.Common.VO.ExitInfoVO;
 import ensharp.yeey.whisperer.Common.VO.PathVO;
+import ensharp.yeey.whisperer.Common.VO.StationVO;
 import ensharp.yeey.whisperer.Common.VO.SubwayStationInfoVO;
 import ensharp.yeey.whisperer.Common.VO.SubwayTimeTableVO;
 import ensharp.yeey.whisperer.Common.VO.TimeVO;
@@ -49,6 +51,18 @@ public class ParseManager {
      */
     public PathVO parsePath(JSONObject jsonObject) {
         return new Parser<>(PathVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+    }
+
+    public CloserStationVO parseCloserStation(JSONObject jsonObject) {
+        CloserStationVO closerStationVO = new Parser<>(CloserStationVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+        if(closerStationVO != null)
+            closerStationVO.setCloserStationList(parseStationInfo(closerStationVO.getStation()));
+
+        return closerStationVO;
+    }
+
+    public List<StationVO> parseStationInfo(JsonElement jsonElement) {
+        return new Parser<>(StationVO.class, "station").NotKeyParseList(jsonElement, new TypeToken<List<StationVO>>() {}.getType());
     }
 
     /**
@@ -112,6 +126,7 @@ public class ParseManager {
      * @return 파싱된 SubwayStationIfoVO List
      */
     public List<SubwayStationInfoVO> parseExOBJ(JsonElement jsonElement) {
+        Log.e("JSONELEMENT",jsonElement.toString());
         return new Parser<>(SubwayStationInfoVO.class, "station").parseList(jsonElement, new TypeToken<List<SubwayStationInfoVO>>() {}.getType());
     }
 
@@ -205,6 +220,14 @@ public class ParseManager {
             Gson gson = new Gson();
             JsonParser parser = new JsonParser();
             JsonElement rootElement = parser.parse(jsonElement.toString()).getAsJsonObject().get(key);
+
+            return gson.fromJson(rootElement, listType);
+        }
+
+        public List<T> NotKeyParseList(JsonElement jsonElement, Type listType) {
+            Gson gson = new Gson();
+            JsonParser parser = new JsonParser();
+            JsonElement rootElement = parser.parse(jsonElement.toString()).getAsJsonArray();
 
             return gson.fromJson(rootElement, listType);
         }
