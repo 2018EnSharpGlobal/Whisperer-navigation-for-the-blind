@@ -112,7 +112,8 @@ class ODsayServiceManager {
                     ((TextView)mainActivity.findViewById(R.id.result)).setText(path.toString());
                     break;
                 case "POINT_SEARCH":
-                    //closerStation = parseCloserStation(jsonObject);
+                    // 가장 가까운 지하철 역 찾아서 전화하기
+                    closerStation = parseManager.parseCloserStation(jsonObject);
                     CallStation(closerStation.getCloserStationList().get(Constant.MOST_CLOSER_STATION));
                     break;
                 case "SUBWAY_STATION_INFO": // 지하철역 세부 정보
@@ -175,24 +176,6 @@ class ODsayServiceManager {
 //        path.setExchangeInfoList(parseExchangeInfo(path.getExChangeInfoSet()));
 //
 //        return path;
-//    }
-
-    /**
-     * 가까운 지하철 정보를 파싱하는 메소드입니다.
-     * @param jsonObject API에서 반환된 JSONObject
-     * @return 파싱된 PathVO 객체
-     */
-    //예진이 처리
-//    public CloserStationVO parseCloserStation(JSONObject jsonObject) {
-//        Gson gson = new GsonBuilder()
-//                .registerTypeAdapter(CloserStationVO.class, new RestDeserializer<>(CloserStationVO.class, "result"))
-//                .create();
-//
-//        CloserStationVO closerStationVO = gson.fromJson(jsonObject.toString(), CloserStationVO.class);
-//
-//        closerStationVO.setCloserStationList(parseStation(closerStationVO.getStation()));
-//
-//        return closerStationVO;
 //    }
 
     /**
