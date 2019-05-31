@@ -1,8 +1,9 @@
 package ensharp.yeey.whisperer;
 
+import android.content.Context;
 import android.os.Looper;
 import android.util.Log;
-import android.os.Handler;
+//import android.os.Handler;
 
 import com.ibm.watson.developer_cloud.assistant.v2.Assistant;
 import com.ibm.watson.developer_cloud.assistant.v2.model.CreateSessionOptions;
@@ -15,6 +16,8 @@ import com.ibm.watson.developer_cloud.assistant.v2.model.RuntimeIntent;
 import com.ibm.watson.developer_cloud.assistant.v2.model.SessionResponse;
 import com.ibm.watson.developer_cloud.http.ServiceCall;
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
+import com.kakao.sdk.newtoneapi.TextToSpeechClient;
+import com.kakao.sdk.newtoneapi.TextToSpeechManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,8 +25,6 @@ import org.json.JSONObject;
 
 import java.util.List;
 import java.util.logging.LogManager;
-
-import ensharp.yeey.whisperer.Activity.CommandActivity;
 
 public class WatsonAssistant{
 
@@ -34,7 +35,6 @@ public class WatsonAssistant{
     private String sessionId;
 
     public CommandCenter commandCenter;
-    public CommandActivity commandActivity;
 
     String responseText;
     String commandType;
@@ -52,7 +52,21 @@ public class WatsonAssistant{
         extraJsonArray = new JSONArray();
 
         createService();
+//        InitializeTextToSpeech();
+//        ttsClient.play("전세영 시발");
     }
+//
+//    // TTS 초기화
+//    private void InitializeTextToSpeech(){
+//        TextToSpeechManager.getInstance().initializeLibrary(mContext);
+//
+//        ttsClient = new TextToSpeechClient.Builder()
+//                .setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1)     // 음성합성방식
+//                .setSpeechSpeed(1.0)            // 발음 속도(0.5~4.0)
+//                .setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM)  //TTS 음색 모드 설정(여성 차분한 낭독체)
+//                .build();
+//        ttsClient.play("전세영 시발");
+//    }
 
     // 어시스턴트 서비스 설정
     private void createService() {
@@ -105,10 +119,18 @@ public class WatsonAssistant{
                 if (responseGeneric.size() > 0) {
                     System.out.println(response.getOutput().getGeneric().get(0).getText());
                     responseText = response.getOutput().getGeneric().get(0).getText();
+                    Log.e("response: ", responseText);
+//                    ttsClient.play(responseText);
+//                    Handler mHandler = new Handler(Looper.getMainLooper());
+//                    mHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//
+//                        }
+//                    }, 0);
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
-//                        textToSpeech();
                         // 명령어 파싱
                         try {
                             JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
@@ -124,7 +146,6 @@ public class WatsonAssistant{
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
                         createJSONObject(commandType, commandDetail, commandSpecificDetail);
                         deleteService();
                     }
