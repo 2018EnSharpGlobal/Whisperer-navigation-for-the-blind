@@ -32,6 +32,8 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 import ensharp.yeey.whisperer.Common.VO.CloserStationVO;
@@ -45,6 +47,7 @@ import ensharp.yeey.whisperer.Common.VO.PathVO;
 import ensharp.yeey.whisperer.Common.VO.StationVO;
 import ensharp.yeey.whisperer.Common.VO.SubwayStationInfoVO;
 import ensharp.yeey.whisperer.Common.VO.SubwayTimeTableVO;
+import ensharp.yeey.whisperer.Common.VO.TimeVO;
 import ensharp.yeey.whisperer.Common.VO.UseInfoVO;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -74,8 +77,12 @@ class ODsayServiceManager {
 
     String departure;
     String destination;
+    String stationName;
 
     String wayCode;
+
+    Calendar cal;
+    String strWeek;
 
     private static String TAG = "API Callback";
 
@@ -95,6 +102,8 @@ class ODsayServiceManager {
         excelManager = new ExcelManager(context);
         odsayService.setReadTimeout(5000);
         odsayService.setConnectionTimeout(5000);
+        cal = Calendar.getInstance();
+        strWeek = null;
     }
 
     /**
@@ -105,7 +114,7 @@ class ODsayServiceManager {
         @Override
         public void onSuccess(ODsayData oDsayData, API api) {
             jsonObject = oDsayData.getJson();
-            String message;
+            String message = "";
 //            Log.e("jsonObject",String.valueOf(jsonObject));
 
             switch (api.name()) {
@@ -137,10 +146,48 @@ class ODsayServiceManager {
                         break;
                 case "SUBWAY_TIME_TABLE":
                     timeTable = parseManager.parseTimeTable(jsonObject, wayCode);
-                    // timeTable 이용 메소드 올 곳
-                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(timeTable.toString());
+                    int nWeek = cal.get(Calendar.DAY_OF_WEEK);
 
-                    Log.e(TAG, "TimeTable: " + timeTable.toString());
+                    SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                    String current_time = format.format(System.currentTimeMillis());
+                    int count = 5;
+                    int hour = Integer.parseInt(current_time.substring(0,2));
+                    int minute = Integer.parseInt(current_time.substring(2,2));
+                    int restTime = 0;
+                    if(nWeek == 1){
+                        //일요일
+                    }
+                    else if(nWeek == 7){
+                        //토요일
+                    }
+                    else{
+                        //평일
+                        if( hour >= 1 && hour <=4 ){
+                            message += "지하철 운행 시간이 아닙니다.";
+                        }
+                        else{
+                            for(TimeVO timeVO : timeTable.getOrdTimeList()){
+                                if(count == hour){
+                                    String minuteList[] = timeVO.getList().split(" ");
+                                    for(String m : minuteList){
+                                        m = m.substring(0,2);
+                                        if(Integer.parseInt(m) > minute){
+                                            Log.e("m",m);
+                                            restTime = Integer.parseInt(m) - minute;
+                                            break;
+                                        }
+                                    }
+                                    break;
+                                }
+                                else{
+
+                                    count++;
+                                }
+                            }
+                            message += stationName + "역의 상행 열차는 " + String.valueOf(restTime) + "분 후에 들어옵니다.";
+                        }
+                    }
+                    Log.e("message",message);
                     break;
                 default:
                     Log.e(TAG, "api 이름: " + api.name());
@@ -201,6 +248,7 @@ class ODsayServiceManager {
      * @param wayCode 상행/하행 여부
      */
     public void getSubwayTimeTable(String stationName, String wayCode) {
+        this.stationName = stationName;
         this.wayCode = wayCode;
         String station_code = excelManager.Find_Data(stationName, Constant.STATION_NAME, Constant.STATION_CODE);
         odsayService.requestSubwayTimeTable(station_code, wayCode, onResultCallbackListener);

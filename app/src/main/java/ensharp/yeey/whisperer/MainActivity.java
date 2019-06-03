@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
 //        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
-        oDsayServiceManager.calculatePath("어린이대공원","강남");
+//        oDsayServiceManager.calculatePath("어린이대공원","강남");
 //        oDsayServiceManager.getSubwayInfo("130");
-//        oDsayServiceManager.getSubwayTimeTable("어린이대공원", "1");
+        oDsayServiceManager.getSubwayTimeTable("어린이대공원", "1");
     }
 
     /**
