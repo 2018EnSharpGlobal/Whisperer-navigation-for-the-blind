@@ -72,6 +72,9 @@ class ODsayServiceManager {
     private SubwayStationInfoVO station;
     private SubwayTimeTableVO timeTable;
 
+    String departure;
+    String destination;
+
     String wayCode;
 
     private static String TAG = "API Callback";
@@ -102,16 +105,23 @@ class ODsayServiceManager {
         @Override
         public void onSuccess(ODsayData oDsayData, API api) {
             jsonObject = oDsayData.getJson();
-
+            String message;
 //            Log.e("jsonObject",String.valueOf(jsonObject));
 
             switch (api.name()) {
                 case "SUBWAY_PATH": // 지하철 경로 검색
                     path = parseManager.parsePath(jsonObject);
                     // path 이용 메소드 올 곳
-                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(path.toString());
-
-                    Log.e(TAG, "Path: " + path.toString());
+                    message = departure + "역에서 " + destination + "역까지 총 " + path.getGlobalStationCount() + "정거장이며 " +
+                            "시간은 " + path.getGlobalTravelTime() + "분 소요됩니다.";
+                    if(path.getExChangeInfoSet() != null) {
+                        message += "환승역은 ";
+                        for(ExchangeInfoVO exchangeInfoVO : path.getExchangeInfoList()){
+                            message += exchangeInfoVO.getExName() + "역 ";
+                        }
+                        message += "이 있습니다.";
+                    }
+                    Log.e("PATHMESSAGE",message);
                     break;
                 case "POINT_SEARCH":
                     // 가장 가까운 지하철 역 찾아서 전화하기
@@ -158,6 +168,8 @@ class ODsayServiceManager {
      * @param destination 도착역 이름
      */
     public void calculatePath(String departure, String destination) {
+        this.departure = departure;
+        this.destination = destination;
         String startCode = excelManager.Find_Data(departure,Constant.STATION_NAME,Constant.STATION_CODE);
         String endCode = excelManager.Find_Data(destination,Constant.STATION_NAME,Constant.STATION_CODE);
         odsayService.requestSubwayPath("1000", startCode, endCode, "2", onResultCallbackListener);

@@ -54,9 +54,6 @@ public class MainActivity extends AppCompatActivity {
 
         initSubwayAPI();
 
-        getKeyHash(this);
-
-
         int MyVersion = Build.VERSION.SDK_INT;
 
         //버전 체크
@@ -68,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
 //        oDsayServiceManager.findCloserStationCode(126.933361407195,37.3643392278118);
-//        oDsayServiceManager.calculatePath("어린이대공원","광나루");
-        oDsayServiceManager.getSubwayInfo("130");
+        oDsayServiceManager.calculatePath("어린이대공원","강남");
+//        oDsayServiceManager.getSubwayInfo("130");
 //        oDsayServiceManager.getSubwayTimeTable("어린이대공원", "1");
     }
 

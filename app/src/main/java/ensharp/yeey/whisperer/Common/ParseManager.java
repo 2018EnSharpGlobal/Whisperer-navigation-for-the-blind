@@ -50,7 +50,11 @@ public class ParseManager {
      * @return 파싱된 PathVO 객체
      */
     public PathVO parsePath(JSONObject jsonObject) {
-        return new Parser<>(PathVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+        PathVO pathvo = new Parser<>(PathVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+        if(pathvo.getExChangeInfoSet() != null){
+            pathvo.setExchangeInfoList(parseExchangeInfo(pathvo.getExChangeInfoSet()));
+        }
+        return pathvo;
     }
 
     public CloserStationVO parseCloserStation(JSONObject jsonObject) {
