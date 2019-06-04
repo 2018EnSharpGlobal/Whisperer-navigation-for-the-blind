@@ -1,6 +1,7 @@
 package ensharp.yeey.whisperer.Activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -87,6 +88,7 @@ public class CommandActivity extends AppCompatActivity {
     private GestureDetector detector;
 
     private boolean speechFlag = false;
+    private boolean commandFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -225,6 +227,11 @@ public class CommandActivity extends AppCompatActivity {
                 final String strInacctiveText = "onFinished() SentSize : " + intSentSize + " RecvSize : " + intRecvSize;
 
                 Log.e("finished", strInacctiveText);
+                if(commandFlag == true){
+                    commandFlag = false;
+                    createJSONObject(commandType, commandDetail, commandSpecificDetail);
+                }
+
             }
 
             @Override
@@ -237,6 +244,7 @@ public class CommandActivity extends AppCompatActivity {
         AudioManager audio = (AudioManager)getApplicationContext().getSystemService(getApplicationContext().AUDIO_SERVICE);
         audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
     }
+
 
     private void handleError(int errorCode) {
         String errorText;
@@ -285,6 +293,7 @@ public class CommandActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         SpeechRecognizerManager.getInstance().finalizeLibrary();
+        TextToSpeechManager.getInstance().finalizeLibrary();
     }
 
     //권학 확인하는 함수
@@ -380,6 +389,7 @@ public class CommandActivity extends AppCompatActivity {
     public void connectWatsonAssistant(final String inputText){
         // 표준 출력에 로그 메시지를 표시하지 않습니다.
         LogManager.getLogManager().reset();
+        commandFlag = false;
 
         new Thread(new Runnable() {
             @Override public void run() {
@@ -424,6 +434,7 @@ public class CommandActivity extends AppCompatActivity {
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1 && response.getOutput().getGeneric().get(1).getOptions() != null) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
+                        commandFlag = true;
                         // 명령어 파싱
                         try {
                             JSONArray jsonArray = new JSONArray(response.getOutput().getGeneric().get(1).getOptions().toString());
@@ -439,7 +450,7 @@ public class CommandActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
+//                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
                         deleteService();
                     }
                 }
@@ -464,7 +475,7 @@ public class CommandActivity extends AppCompatActivity {
         System.out.println(result);
         Log.e("json: ", responseText);
 
-        commandCenter = new CommandCenter(commandType, commandDetail, commandSpecificDetail);
+        commandCenter = new CommandCenter(this, commandType, commandDetail, commandSpecificDetail);
     }
 
     private void fadeInOutAnimation(){

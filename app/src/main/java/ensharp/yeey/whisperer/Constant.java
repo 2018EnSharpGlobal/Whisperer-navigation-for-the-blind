@@ -33,6 +33,7 @@ public class Constant {
     // IBM Watson Assistant Intent
 
     // Navigation
+    public static final String COMMAND_GUIDE = "GUIDE";
     public static final String COMMAND_BATHROOM = "Bathroom";
 
     // Alarm
@@ -42,7 +43,11 @@ public class Constant {
     public static final String COMMAND_CALL = "CALL";
 
     // Helping
-    public static final String COMMAND_HELPING = "Help";
+    public static final String COMMAND_HELP = "HELP";
+
+    // Information
+    public static final String COMMAND_TIME = "TIME";
+    public static final String COMMAND_ROUTE = "ROUTE";
 
     //Watson Assistant API
     public static final String ASSISTANT_ID = "613a7993-9a45-4c79-86c5-d8a3fc187907";
