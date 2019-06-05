@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import ensharp.yeey.whisperer.Activity.CommandActivity;
 import ensharp.yeey.whisperer.Activity.HelpingActivity;
+import ensharp.yeey.whisperer.Activity.InformationActivity;
 
 import static ensharp.yeey.whisperer.Constant.COMMAND_CALL;
 import static ensharp.yeey.whisperer.Constant.COMMAND_GUIDE;
@@ -27,6 +28,9 @@ public class CommandCenter {
         this.commandDescription = commandDescription;
         this.optionalDescription = optionalDescription;
 
+        Log.e("출발역",commandDescription);
+        Log.e("도착역",optionalDescription);
+
         CategorizeCommand();
     }
 
@@ -35,22 +39,34 @@ public class CommandCenter {
     }
 
     private void CategorizeCommand(){
+        Intent intent;
         Log.e("instruction", instruction);
         switch(instruction){
             case COMMAND_GUIDE:
                 break;
 
             case COMMAND_CALL:
+                intent = new Intent(commandActivityContext, InformationActivity.class);
+                intent.putExtra("instruction",instruction);
+                ((CommandActivity)commandActivityContext).startActivity(new Intent(intent));
                 break;
-
             case COMMAND_HELP:
-                ExecuteCommandActivity();
+                intent = new Intent(commandActivityContext, HelpingActivity.class);
+                ((CommandActivity)commandActivityContext).startActivity(new Intent(intent));
                 break;
-
             case COMMAND_ROUTE:
+                intent = new Intent(commandActivityContext, InformationActivity.class);
+                intent.putExtra("instruction",instruction);
+                intent.putExtra("departure",commandDescription);
+                intent.putExtra("destination",optionalDescription);
+                ((CommandActivity)commandActivityContext).startActivity(new Intent(intent));
                 break;
-
             case COMMAND_TIME:
+                intent = new Intent(commandActivityContext, InformationActivity.class);
+                intent.putExtra("instruction",instruction);
+                intent.putExtra("departure",commandDescription);
+                intent.putExtra("destination",optionalDescription);
+                ((CommandActivity)commandActivityContext).startActivity(new Intent(intent));
                 break;
         }
     }

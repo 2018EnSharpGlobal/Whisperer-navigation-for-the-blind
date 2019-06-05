@@ -17,104 +17,30 @@ import com.kakao.sdk.newtoneapi.TextToSpeechClient;
 import com.kakao.sdk.newtoneapi.TextToSpeechListener;
 import com.kakao.sdk.newtoneapi.TextToSpeechManager;
 
+import ensharp.yeey.whisperer.KakaoSTTManager;
 import ensharp.yeey.whisperer.R;
 
 public class HelpingActivity extends AppCompatActivity {
     private TextToSpeechClient ttsClient;
-
+    private KakaoSTTManager kakaoSTTManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helping);
 
+        kakaoSTTManager = KakaoSTTManager.getInstance();
+        kakaoSTTManager.setContext(this);
+        kakaoSTTManager.setActivity(this);
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         fadeInOutAnimation();
-        InitializeTextToSpeech();
 
-        ttsClient.play("내가 지금 도움말을 안내중입니다");
-    }
-
-    // TTS 초기화
-    private void InitializeTextToSpeech(){
-        TextToSpeechManager.getInstance().initializeLibrary(this);
-        if(ttsClient != null && ttsClient.isPlaying()){
-            ttsClient.stop();
-            Log.e("지움", "지움");
-            return;
-        }
-
-        ttsClient = new TextToSpeechClient.Builder().setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1).setSpeechSpeed(1.0).
-                setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM).setListener(new TextToSpeechListener() {
-            @Override
-            public void onFinished() {
-                int intSentSize = ttsClient.getSentDataSize();
-                int intRecvSize = ttsClient.getReceivedDataSize();
-
-                final String strInacctiveText = "onFinished() SentSize : " + intSentSize + " RecvSize : " + intRecvSize;
-
-                Log.e("finished", strInacctiveText);
-                ReturnCommandActivity();
-            }
-
-            @Override
-            public void onError(int code, String message) {
-                handleError(code);
-            }
-        }).build();
-
-        // audio 출력 최대
-        AudioManager audio = (AudioManager)this.getSystemService(this.AUDIO_SERVICE);
-        audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
-    }
-
-    private void ReturnCommandActivity(){
-        startActivity(new Intent(this, CommandActivity.class));
-        overridePendingTransition(R.anim.anim_slide_in_left, R.anim.anim_slide_out_right);
-    }
-
-    private void handleError(int errorCode) {
-        String errorText;
-        switch (errorCode) {
-            case TextToSpeechClient.ERROR_NETWORK:
-                errorText = "네트워크 오류";
-                break;
-            case TextToSpeechClient.ERROR_NETWORK_TIMEOUT:
-                errorText = "네트워크 지연";
-                break;
-            case TextToSpeechClient.ERROR_CLIENT_INETRNAL:
-                errorText = "음성합성 클라이언트 내부 오류";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_INTERNAL:
-                errorText = "음성합성 서버 내부 오류";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_TIMEOUT:
-                errorText = "음성합성 서버 최대 접속시간 초과";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_AUTHENTICATION:
-                errorText = "음성합성 인증 실패";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_BAD:
-                errorText = "음성합성 텍스트 오류";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_EXCESS:
-                errorText = "음성합성 텍스트 허용 길이 초과";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_UNSUPPORTED_SERVICE:
-                errorText = "음성합성 서비스 모드 오류";
-                break;
-            case TextToSpeechClient.ERROR_SERVER_ALLOWED_REQUESTS_EXCESS:
-                errorText = "허용 횟수 초과";
-                break;
-            default:
-                errorText = "정의하지 않은 오류";
-                break;
-        }
-
-        final String statusMessage = errorText + " (" + errorCode + ")";
-
-        Log.e("Error", statusMessage);
+        kakaoSTTManager.getClient().play("위스퍼러는 크게 4가지 기능으로 구성되어 있습니다." +
+                " 첫 번째 길 찾기, 두 번째 지하철 정보 알림, 세 번째 역사무원에게 전화하기, 네 번쨰는 도움말 듣기입니다." +
+                "사용자는 명령 입력 화면에서 화면을 두 번 터치를 하고, 음성 명령을 입력할 수 있습니다." +
+                "위스퍼러는 명령을 인식 및 분석하여 해당하는 기능을 사용자에게 제공합니다.");
     }
 
     private void fadeInOutAnimation(){

@@ -50,7 +50,11 @@ public class ParseManager {
      * @return 파싱된 PathVO 객체
      */
     public PathVO parsePath(JSONObject jsonObject) {
-        return new Parser<>(PathVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+        PathVO pathvo = new Parser<>(PathVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
+        if(pathvo.getExChangeInfoSet() != null){
+            pathvo.setExchangeInfoList(parseExchangeInfo(pathvo.getExChangeInfoSet()));
+        }
+        return pathvo;
     }
 
     public CloserStationVO parseCloserStation(JSONObject jsonObject) {
@@ -62,6 +66,7 @@ public class ParseManager {
     }
 
     public List<StationVO> parseStationInfo(JsonElement jsonElement) {
+        Log.e("Station",jsonElement.toString());
         return new Parser<>(StationVO.class, "station").NotKeyParseList(jsonElement, new TypeToken<List<StationVO>>() {}.getType());
     }
 
@@ -109,13 +114,12 @@ public class ParseManager {
      */
     public SubwayTimeTableVO parseTimeTable(JSONObject jsonObject, String wayCode) {
         SubwayTimeTableVO timeTable = new Parser<>(SubwayTimeTableVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
-
         if (timeTable.getOrdList() != null)
-            timeTable.setOrdTime(parseTime(timeTable.getOrdList(), wayCode));
+            timeTable.setOrdTimeList(parseTime(timeTable.getOrdList(), wayCode));
         if (timeTable.getSatList() != null)
-            timeTable.setSatTime(parseTime(timeTable.getSatList(), wayCode));
+            timeTable.setSatTimeList(parseTime(timeTable.getSatList(), wayCode));
         if (timeTable.getSunList() != null)
-            timeTable.setSunTime(parseTime(timeTable.getSunList(), wayCode));
+            timeTable.setSunTimeList(parseTime(timeTable.getSunList(), wayCode));
 
         return timeTable;
     }
@@ -126,7 +130,6 @@ public class ParseManager {
      * @return 파싱된 SubwayStationIfoVO List
      */
     public List<SubwayStationInfoVO> parseExOBJ(JsonElement jsonElement) {
-        Log.e("JSONELEMENT",jsonElement.toString());
         return new Parser<>(SubwayStationInfoVO.class, "station").parseList(jsonElement, new TypeToken<List<SubwayStationInfoVO>>() {}.getType());
     }
 
@@ -190,8 +193,9 @@ public class ParseManager {
      * @param jsonElement 지하철 시간 정보     *
      * @return 파싱된 지하철 시간표
      */
-    public TimeVO parseTime(JsonElement jsonElement, String wayCode) {
-        return new Parser<>(TimeVO.class, calculateKey(wayCode)).parse(gson.fromJson(jsonElement, JsonElement.class));
+    public List<TimeVO> parseTime(JsonElement jsonElement, String wayCode) {
+        JsonElement tempJsonElement = jsonElement.getAsJsonObject().get(calculateKey(wayCode)).getAsJsonObject().get("time");
+        return new Parser<>(TimeVO.class, "time").NotKeyParseList(tempJsonElement, new TypeToken<List<TimeVO>>() {}.getType());
     }
 
     public String calculateKey(String wayCode) {

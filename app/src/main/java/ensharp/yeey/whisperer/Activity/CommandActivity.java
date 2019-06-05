@@ -428,7 +428,7 @@ public class CommandActivity extends AppCompatActivity {
                     speechFlag = false;
                     Log.e("response: ", responseText);
                     AudioManager audio = (AudioManager)getApplicationContext().getSystemService(getApplicationContext().AUDIO_SERVICE);
-                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_PLAY_SOUND);
+                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)-4, AudioManager.FLAG_PLAY_SOUND);
                     // tts 출력
                     ttsClient.play(responseText);
                     // 안내 응답이 있는 경우
