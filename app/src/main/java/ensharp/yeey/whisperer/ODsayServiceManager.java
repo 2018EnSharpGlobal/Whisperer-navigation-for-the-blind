@@ -90,7 +90,9 @@ class ODsayServiceManager {
         parseManager = ParseManager.getInstance();
     }
 
-    public void setContext(Context _context) { this.context = _context; }
+    public void setContext(Context _context) {
+        this.context = _context;
+    }
 
     /**
      * 지하철 운행정보를 가져오는 API를 호출합니다.
@@ -123,14 +125,14 @@ class ODsayServiceManager {
                     // path 이용 메소드 올 곳
                     message = departure + "역에서 " + destination + "역까지 총 " + path.getGlobalStationCount() + "정거장이며 " +
                             "시간은 " + path.getGlobalTravelTime() + "분 소요됩니다.";
-                    if(path.getExChangeInfoSet() != null) {
+                    if (path.getExChangeInfoSet() != null) {
                         message += "환승역은 ";
-                        for(ExchangeInfoVO exchangeInfoVO : path.getExchangeInfoList()){
+                        for (ExchangeInfoVO exchangeInfoVO : path.getExchangeInfoList()) {
                             message += exchangeInfoVO.getExName() + "역 ";
                         }
                         message += "이 있습니다.";
                     }
-                    Log.e("PATHMESSAGE",message);
+                    Log.e("PATHMESSAGE", message);
                     break;
                 case "POINT_SEARCH":
                     // 가장 가까운 지하철 역 찾아서 전화하기
@@ -140,60 +142,30 @@ class ODsayServiceManager {
                 case "SUBWAY_STATION_INFO": // 지하철역 세부 정보
                     station = parseManager.parseStation(jsonObject);
                     // station 이용 메소드 올 곳
-                    ((TextView)((Activity)context).findViewById(R.id.result)).setText(station.toString());
+                    ((TextView) ((Activity) context).findViewById(R.id.result)).setText(station.toString());
 
                     Log.e(TAG, "Subway: " + station.toString());
-                        break;
+                    break;
                 case "SUBWAY_TIME_TABLE":
                     timeTable = parseManager.parseTimeTable(jsonObject, wayCode);
                     int nWeek = cal.get(Calendar.DAY_OF_WEEK);
-
-                    SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-                    String current_time = format.format(System.currentTimeMillis());
-                    int count = 5;
-                    int hour = Integer.parseInt(current_time.substring(0,2));
-                    int minute = Integer.parseInt(current_time.substring(2,2));
-                    int restTime = 0;
-                    if(nWeek == 1){
+                    if (nWeek == 1) {
                         //일요일
-                    }
-                    else if(nWeek == 7){
+                        message += GetRestTIme(timeTable.getSunTimeList(), nWeek);
+                    } else if (nWeek == 7) {
                         //토요일
-                    }
-                    else{
+                        message += GetRestTIme(timeTable.getSatTimeList(), nWeek);
+                    } else {
                         //평일
-                        if( hour >= 1 && hour <=4 ){
-                            message += "지하철 운행 시간이 아닙니다.";
-                        }
-                        else{
-                            for(TimeVO timeVO : timeTable.getOrdTimeList()){
-                                if(count == hour){
-                                    String minuteList[] = timeVO.getList().split(" ");
-                                    for(String m : minuteList){
-                                        m = m.substring(0,2);
-                                        if(Integer.parseInt(m) > minute){
-                                            Log.e("m",m);
-                                            restTime = Integer.parseInt(m) - minute;
-                                            break;
-                                        }
-                                    }
-                                    break;
-                                }
-                                else{
-
-                                    count++;
-                                }
-                            }
-                            message += stationName + "역의 상행 열차는 " + String.valueOf(restTime) + "분 후에 들어옵니다.";
-                        }
+                        message += GetRestTIme(timeTable.getOrdTimeList(), nWeek);
                     }
-                    Log.e("message",message);
+                    Log.e("message", message);
+
                     break;
                 default:
                     Log.e(TAG, "api 이름: " + api.name());
                     break;
             }
-
         }
 
         @Override
@@ -202,8 +174,47 @@ class ODsayServiceManager {
         }
     };
 
+
+    private String GetRestTIme(List<TimeVO> timeVOList, int nWeek) {
+        String message = "";
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+        String current_time = format.format(System.currentTimeMillis());
+        String hour_minute[] = current_time.split(":");
+        int hour = Integer.parseInt(hour_minute[0]);
+        int minute = Integer.parseInt(hour_minute[1]);
+        int restTime = 0;
+
+        //평일
+        if (hour >= 1 && hour <= 4) {
+            message += "지하철 운행 시간이 아닙니다.";
+        }
+        else {
+            for (int j = 0; j < timeVOList.size(); j++) {
+                if (5 + j == hour) {
+                    String minuteList[] = timeVOList.get(j).getList().split(" ");
+                    boolean next = false;
+                    for (int i = 0; i < minuteList.length; i++) {
+                        minuteList[i] = minuteList[i].substring(0, 2);
+                        if (Integer.parseInt(minuteList[i]) > minute) {
+                            restTime = Integer.parseInt(minuteList[i]) - minute;
+                            next = true;
+                            break;
+                        }
+                    }
+                    if (!next) {
+                        restTime = Integer.parseInt(timeVOList.get(j + 1).getList().split(" ")[0].substring(0, 2)) + 60 - minute;
+                    }
+                    break;
+                }
+            }
+            message += stationName + "역의 상행 열차는 " + String.valueOf(restTime) + "분 후에 들어옵니다.";
+        }
+
+        return message;
+    }
+
     //가까운 지하철역 코드 조회
-    public void findCloserStationCode(double latitude, double longitude){
+    public void findCloserStationCode(double latitude, double longitude) {
         odsayService.requestPointSearch(String.valueOf(latitude), String.valueOf(longitude), "5000", "2", onResultCallbackListener);
     }
 
@@ -211,29 +222,30 @@ class ODsayServiceManager {
      * 출발역과 도착역의 코드를 파라미터로 전달하면 이동 경로를 계산합니다.
      * requestSubwayPath는 비동기로 진행됩니다.
      * 계산된 이동 경로는 path에 저장됩니다.
-     * @param departure 출발역 이름
+     *
+     * @param departure   출발역 이름
      * @param destination 도착역 이름
      */
     public void calculatePath(String departure, String destination) {
         this.departure = departure;
         this.destination = destination;
-        String startCode = excelManager.Find_Data(departure,Constant.STATION_NAME,Constant.STATION_CODE);
-        String endCode = excelManager.Find_Data(destination,Constant.STATION_NAME,Constant.STATION_CODE);
+        String startCode = excelManager.Find_Data(departure, Constant.STATION_NAME, Constant.STATION_CODE);
+        String endCode = excelManager.Find_Data(destination, Constant.STATION_NAME, Constant.STATION_CODE);
         odsayService.requestSubwayPath("1000", startCode, endCode, "2", onResultCallbackListener);
     }
 
 
     //해당 역 코드로 전화번호를 찾아서 전화 걸기
-    private void CallStation(StationVO mCloserStation){
+    private void CallStation(StationVO mCloserStation) {
         String stationNumber = excelManager.Find_Data(String.valueOf(mCloserStation.getStationID())
                 , Constant.STATION_CODE, Constant.STATION_NUMBER);
-        Log.e("stationNumber",stationNumber);
+        Log.e("stationNumber", stationNumber);
         Uri call = Uri.parse("tel:" + stationNumber);
 
         Intent call_intent = new Intent(Intent.ACTION_CALL, call);
 
-        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED){
-            startActivity(context, call_intent,null);
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
+            startActivity(context, call_intent, null);
         }
     }
 
@@ -244,8 +256,9 @@ class ODsayServiceManager {
     /**
      * 지하철역의 시간표를 가져오는 메소드입니다.
      * 정보는 timeTable에 저장됩니다.
+     *
      * @param stationName 지하철역 이름
-     * @param wayCode 상행/하행 여부
+     * @param wayCode     상행/하행 여부
      */
     public void getSubwayTimeTable(String stationName, String wayCode) {
         this.stationName = stationName;

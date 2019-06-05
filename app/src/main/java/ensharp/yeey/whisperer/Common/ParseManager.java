@@ -114,7 +114,6 @@ public class ParseManager {
      */
     public SubwayTimeTableVO parseTimeTable(JSONObject jsonObject, String wayCode) {
         SubwayTimeTableVO timeTable = new Parser<>(SubwayTimeTableVO.class, "result").parse(gson.fromJson(jsonObject.toString(), JsonElement.class));
-
         if (timeTable.getOrdList() != null)
             timeTable.setOrdTimeList(parseTime(timeTable.getOrdList(), wayCode));
         if (timeTable.getSatList() != null)
