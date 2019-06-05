@@ -52,7 +52,7 @@ repositories {
     mavenCentral()
     google()
 
-     //indooratlas sdk
+    //indooratlas sdk
     maven {
         url "http://indooratlas-ltd.bintray.com/mvn-public"
     }

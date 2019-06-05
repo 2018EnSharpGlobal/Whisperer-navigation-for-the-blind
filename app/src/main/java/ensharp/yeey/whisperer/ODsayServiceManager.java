@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +21,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.kakao.sdk.newtoneapi.TextToSpeechClient;
+import com.kakao.sdk.newtoneapi.TextToSpeechListener;
+import com.kakao.sdk.newtoneapi.TextToSpeechManager;
 import com.odsay.odsayandroidsdk.API;
 import com.odsay.odsayandroidsdk.ODsayData;
 import com.odsay.odsayandroidsdk.ODsayService;
@@ -36,6 +41,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import ensharp.yeey.whisperer.Activity.CommandActivity;
+import ensharp.yeey.whisperer.Activity.InformationActivity;
 import ensharp.yeey.whisperer.Common.VO.CloserStationVO;
 import ensharp.yeey.whisperer.Common.ParseManager;
 import ensharp.yeey.whisperer.Common.VO.BusStopVO;
@@ -55,10 +62,12 @@ import jxl.read.biff.BiffException;
 
 import static android.support.v4.content.ContextCompat.startActivity;
 
-class ODsayServiceManager {
+public class ODsayServiceManager {
     private static final ODsayServiceManager ourInstance = new ODsayServiceManager();
 
-    static ODsayServiceManager getInstance() {
+    KakaoSTTManager kakaoSTTManager;
+
+    public static ODsayServiceManager getInstance() {
         return ourInstance;
     }
 
@@ -67,11 +76,11 @@ class ODsayServiceManager {
     private ParseManager parseManager;
     ExcelManager excelManager;
 
-
     private PathVO path;
     private CloserStationVO closerStation;
 
     private Context context;
+    private Context STTContext;
     private SubwayStationInfoVO station;
     private SubwayTimeTableVO timeTable;
 
@@ -86,12 +95,25 @@ class ODsayServiceManager {
 
     private static String TAG = "API Callback";
 
+    private Activity activity;
+
     private ODsayServiceManager() {
         parseManager = ParseManager.getInstance();
     }
 
     public void setContext(Context _context) {
         this.context = _context;
+    }
+
+    public void setActivity(Activity activity){
+        this.activity = activity;
+        kakaoSTTManager.setActivity(activity);
+    }
+
+    public void setSTTContext(Context _context){
+        this.STTContext = _context;
+        kakaoSTTManager = KakaoSTTManager.getInstance();
+        kakaoSTTManager.setContext(_context);
     }
 
     /**
@@ -132,7 +154,8 @@ class ODsayServiceManager {
                         }
                         message += "이 있습니다.";
                     }
-                    Log.e("PATHMESSAGE", message);
+                    Log.e("message",message);
+                    kakaoSTTManager.getClient().play(message);
                     break;
                 case "POINT_SEARCH":
                     // 가장 가까운 지하철 역 찾아서 전화하기
@@ -160,7 +183,7 @@ class ODsayServiceManager {
                         message += GetRestTIme(timeTable.getOrdTimeList(), nWeek);
                     }
                     Log.e("message", message);
-
+                    kakaoSTTManager.getClient().play(message);
                     break;
                 default:
                     Log.e(TAG, "api 이름: " + api.name());
@@ -174,7 +197,6 @@ class ODsayServiceManager {
         }
     };
 
-
     private String GetRestTIme(List<TimeVO> timeVOList, int nWeek) {
         String message = "";
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
@@ -186,7 +208,7 @@ class ODsayServiceManager {
 
         //평일
         if (hour >= 1 && hour <= 4) {
-            message += "지하철 운행 시간이 아닙니다.";
+            message += "지금 시각은 지하철 운행 시간이 아닙니다.";
         }
         else {
             for (int j = 0; j < timeVOList.size(); j++) {
