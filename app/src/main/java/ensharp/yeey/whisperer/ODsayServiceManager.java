@@ -67,6 +67,9 @@ public class ODsayServiceManager {
 
     KakaoSTTManager kakaoSTTManager;
 
+    private TextToSpeechClient ttsClient;
+
+
     public static ODsayServiceManager getInstance() {
         return ourInstance;
     }
@@ -83,6 +86,7 @@ public class ODsayServiceManager {
     private Context STTContext;
     private SubwayStationInfoVO station;
     private SubwayTimeTableVO timeTable;
+    private StationVO closerStationVO;
 
     String departure;
     String destination;
@@ -112,6 +116,7 @@ public class ODsayServiceManager {
 
     public void setSTTContext(Context _context){
         this.STTContext = _context;
+        InitializeTextToSpeech();
         kakaoSTTManager = KakaoSTTManager.getInstance();
         kakaoSTTManager.setContext(_context);
     }
@@ -160,7 +165,11 @@ public class ODsayServiceManager {
                 case "POINT_SEARCH":
                     // 가장 가까운 지하철 역 찾아서 전화하기
                     closerStation = parseManager.parseCloserStation(jsonObject);
-                    CallStation(closerStation.getCloserStationList().get(Constant.MOST_CLOSER_STATION));
+                    message = closerStation.getCloserStationList().get(0).getStationName() + "역에 전화걸겠습니다.";
+                    closerStationVO = closerStation.getCloserStationList().get(Constant.MOST_CLOSER_STATION);
+                    Log.e("message",message);
+                    ttsClient.play(message);
+                    Log.e("1","1");
                     break;
                 case "SUBWAY_STATION_INFO": // 지하철역 세부 정보
                     station = parseManager.parseStation(jsonObject);
@@ -229,7 +238,7 @@ public class ODsayServiceManager {
                     break;
                 }
             }
-            message += stationName + "역의 상행 열차는 " + String.valueOf(restTime) + "분 후에 들어옵니다.";
+            message += stationName + "역의 상행 열차는 " + String.valueOf(restTime) + "분 후에 도착합니다.";
         }
 
         return message;
@@ -287,5 +296,82 @@ public class ODsayServiceManager {
         this.wayCode = wayCode;
         String station_code = excelManager.Find_Data(stationName, Constant.STATION_NAME, Constant.STATION_CODE);
         odsayService.requestSubwayTimeTable(station_code, wayCode, onResultCallbackListener);
+    }
+
+    // TTS 초기화
+    private void InitializeTextToSpeech() {
+        TextToSpeechManager.getInstance().initializeLibrary(STTContext);
+        if (ttsClient != null && ttsClient.isPlaying()) {
+            ttsClient.stop();
+            Log.e("지움", "지움");
+            return;
+        }
+
+        ttsClient = new TextToSpeechClient.Builder().setSpeechMode(TextToSpeechClient.NEWTONE_TALK_1).setSpeechSpeed(1.0).
+                setSpeechVoice(TextToSpeechClient.VOICE_WOMAN_READ_CALM).setListener(new TextToSpeechListener() {
+            @Override
+            public void onFinished() {
+                int intSentSize = ttsClient.getSentDataSize();
+                int intRecvSize = ttsClient.getReceivedDataSize();
+
+                final String strInacctiveText = "onFinished() SentSize : " + intSentSize + " RecvSize : " + intRecvSize;
+
+                Log.e("finished", strInacctiveText);
+
+                CallStation(closerStationVO);
+            }
+
+            @Override
+            public void onError(int code, String message) {
+                handleError(code);
+            }
+        }).build();
+
+        // audio 출력 최대
+        AudioManager audio = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
+        audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC) - 5, AudioManager.FLAG_PLAY_SOUND);
+    }
+
+    private void handleError(int errorCode) {
+        String errorText;
+        switch (errorCode) {
+            case TextToSpeechClient.ERROR_NETWORK:
+                errorText = "네트워크 오류";
+                break;
+            case TextToSpeechClient.ERROR_NETWORK_TIMEOUT:
+                errorText = "네트워크 지연";
+                break;
+            case TextToSpeechClient.ERROR_CLIENT_INETRNAL:
+                errorText = "음성합성 클라이언트 내부 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_INTERNAL:
+                errorText = "음성합성 서버 내부 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_TIMEOUT:
+                errorText = "음성합성 서버 최대 접속시간 초과";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_AUTHENTICATION:
+                errorText = "음성합성 인증 실패";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_BAD:
+                errorText = "음성합성 텍스트 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_SPEECH_TEXT_EXCESS:
+                errorText = "음성합성 텍스트 허용 길이 초과";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_UNSUPPORTED_SERVICE:
+                errorText = "음성합성 서비스 모드 오류";
+                break;
+            case TextToSpeechClient.ERROR_SERVER_ALLOWED_REQUESTS_EXCESS:
+                errorText = "허용 횟수 초과";
+                break;
+            default:
+                errorText = "정의하지 않은 오류";
+                break;
+        }
+
+        final String statusMessage = errorText + " (" + errorCode + ")";
+
+        Log.e("Error", statusMessage);
     }
 }
