@@ -420,17 +420,20 @@ public class CommandActivity extends AppCompatActivity {
 
                 // 대화로부터의 출력을 인쇄합니다(있는 경우). 단일 텍스트 응답을 가정합니다.
                 List<DialogRuntimeResponseGeneric> responseGeneric = response.getOutput().getGeneric();
-
+                Log.e("responseGenric_Size",String.valueOf(responseGeneric.size()));
                 // 단순 대답 응답이 있는 경우
                 if (responseGeneric.size() > 0) {
-                    System.out.println(response.getOutput().getGeneric().get(0).getText());
                     responseText = response.getOutput().getGeneric().get(0).getText();
                     speechFlag = false;
-                    Log.e("response: ", responseText);
                     AudioManager audio = (AudioManager)getApplicationContext().getSystemService(getApplicationContext().AUDIO_SERVICE);
                     audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)-4, AudioManager.FLAG_PLAY_SOUND);
-                    // tts 출력
-                    ttsClient.play(responseText);
+                    if(!responseText.contains("병신")) {
+                        Log.e("reponsetText",responseText);
+                        ttsClient.play(responseText);
+                    }
+                    else{
+                        Log.e("reponsetText",responseText);
+                    }
                     // 안내 응답이 있는 경우
                     if(responseGeneric.size() > 1 && response.getOutput().getGeneric().get(1).getOptions() != null) {
                         commandType= response.getOutput().getGeneric().get(1).getTitle();
@@ -452,6 +455,9 @@ public class CommandActivity extends AppCompatActivity {
                         }
 //                        createJSONObject(commandType, commandDetail, commandSpecificDetail);
                         deleteService();
+                        if(responseText.contains("병신")){
+                            createJSONObject(commandType, commandDetail, commandSpecificDetail);
+                        }
                     }
                 }
             }

@@ -1,13 +1,22 @@
 package ensharp.yeey.whisperer;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
+import android.net.Uri;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.kakao.sdk.newtoneapi.TextToSpeechClient;
 import com.kakao.sdk.newtoneapi.TextToSpeechListener;
 import com.kakao.sdk.newtoneapi.TextToSpeechManager;
+
+import java.util.List;
+
+import ensharp.yeey.whisperer.Common.VO.StationVO;
 
 public class KakaoSTTManager {
     private static final KakaoSTTManager ourInstance = new KakaoSTTManager();
@@ -20,23 +29,23 @@ public class KakaoSTTManager {
     private Context context;
     private Activity activity;
 
-    KakaoSTTManager(){
+    KakaoSTTManager() {
 
     }
 
-    public void setContext(Context _context){
+    public void setContext(Context _context) {
         this.context = _context;
         InitializeTextToSpeech();
     }
 
-    public void setActivity(Activity activity){
+    public void setActivity(Activity activity) {
         this.activity = activity;
     }
 
     // TTS 초기화
-    private void InitializeTextToSpeech(){
+    private void InitializeTextToSpeech() {
         TextToSpeechManager.getInstance().initializeLibrary(context);
-        if(ttsClient != null && ttsClient.isPlaying()){
+        if (ttsClient != null && ttsClient.isPlaying()) {
             ttsClient.stop();
             Log.e("지움", "지움");
             return;
@@ -55,6 +64,8 @@ public class KakaoSTTManager {
 
                 activity.overridePendingTransition(R.anim.anim_slide_in_left, R.anim.anim_slide_out_right);
                 activity.finish();
+
+
             }
 
             @Override
@@ -64,7 +75,7 @@ public class KakaoSTTManager {
         }).build();
 
         // audio 출력 최대
-        AudioManager audio = (AudioManager)context.getSystemService(context.AUDIO_SERVICE);
+        AudioManager audio = (AudioManager) context.getSystemService(context.AUDIO_SERVICE);
         audio.setStreamVolume(AudioManager.STREAM_MUSIC, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC) - 5, AudioManager.FLAG_PLAY_SOUND);
     }
 
@@ -111,7 +122,7 @@ public class KakaoSTTManager {
         Log.e("Error", statusMessage);
     }
 
-    public TextToSpeechClient getClient(){
+    public TextToSpeechClient getClient() {
         return ttsClient;
     }
 }
